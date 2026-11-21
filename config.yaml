@@ -1,0 +1,49 @@
+# ============================================================
+#  Configuración del sistema de clipping automático
+# ============================================================
+
+# Fuentes de video largo de donde sacar clips.
+# Puede ser un canal de YouTube, una playlist o un video suelto.
+# IMPORTANTE: usa solo contenido tuyo o con permiso para recortar.
+sources:
+  - url: "https://www.youtube.com/@TU_CANAL/videos"
+    max_new_videos: 1        # cuántos videos nuevos procesar por corrida
+
+limits:
+  max_video_minutes: 90      # ignora videos más largos (GitHub Actions tiene 6h máx)
+  clips_per_video: 3         # cuántos clips sacar de cada video
+  min_clip_seconds: 20
+  max_clip_seconds: 60
+
+transcription:
+  model: "small"             # tiny | base | small | medium (más grande = mejor y más lento)
+  language: "es"             # null para detección automática
+
+highlights:
+  model: "claude-opus-5-5"   # modelo de Claude que elige los mejores momentos
+  effort: "medium"
+  extra_instructions: >
+    Prioriza momentos con un gancho fuerte en los primeros 3 segundos,
+    humor, opiniones polémicas o datos sorprendentes. Que el clip se
+    entienda solo, sin contexto previo.
+
+render:
+  layout: "blur"             # blur = video centrado con fondo difuminado | crop = recorte al centro
+  subtitles: true
+  words_per_caption: 3
+  font: "Montserrat ExtraBold"
+  font_size: 82
+  highlight_color: "&H0000FFFF"  # amarillo (formato ASS: &HAABBGGRR)
+  show_title_seconds: 3      # muestra el título/gancho arriba los primeros N segundos (0 = no)
+
+publish:
+  enabled: true              # false = solo genera los clips (se descargan como artefacto)
+  delay_between_posts_seconds: 60
+  tiktok:
+    enabled: true
+    # inbox  = sube como borrador a tu bandeja de TikTok (no requiere auditoría de la app)
+    # direct = publica directo (requiere que TikTok apruebe tu app; si no, solo SELF_ONLY)
+    mode: "inbox"
+    privacy_level: "PUBLIC_TO_EVERYONE"
+  facebook:
+    enabled: true            # publica como Reel en tus páginas de Facebook

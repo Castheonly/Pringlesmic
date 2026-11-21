@@ -1,0 +1,89 @@
+name: Auto Clipper
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"     # cada 6 horas (hora UTC)
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Procesar solo este video o canal (opcional)"
+        required: false
+      no_publish:
+        description: "Solo generar clips, sin publicar"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-clipper
+  cancel-in-progress: false
+
+jobs:
+  clip:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar ffmpeg y fuentes
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-montserrat
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Cache de modelos Whisper
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: whisper-${{ hashFiles('config.yaml') }}
+          restore-keys: whisper-
+
+      - name: Cookies de YouTube (opcional)
+        env:
+          YT_COOKIES: ${{ secrets.YT_COOKIES }}
+        run: |
+          if [ -n "$YT_COOKIES" ]; then
+            printf '%s' "$YT_COOKIES" > cookies.txt
+            echo "YT_COOKIES_FILE=$PWD/cookies.txt" >> "$GITHUB_ENV"
+          fi
+
+      - name: Generar y publicar clips
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+          TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+          TIKTOK_ACCOUNTS_JSON: ${{ secrets.TIKTOK_ACCOUNTS_JSON }}
+          FACEBOOK_PAGES_JSON: ${{ secrets.FACEBOOK_PAGES_JSON }}
+          INPUT_URL: ${{ inputs.url }}
+          INPUT_NO_PUBLISH: ${{ inputs.no_publish }}
+        run: |
+          ARGS=()
+          [ -n "$INPUT_URL" ] && ARGS+=(--url "$INPUT_URL")
+          [ "$INPUT_NO_PUBLISH" = "true" ] && ARGS+=(--no-publish)
+          python -m clipper.main "${ARGS[@]}"
+
+      - name: Guardar clips como artefacto
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clips-${{ github.run_id }}
+          path: output/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Guardar registro de videos procesados
+        if: always()
+        run: |
+          git config user.name "auto-clipper"
+          git config user.email "actions@users.noreply.github.com"
+          git add state/processed.json
+          git diff --cached --quiet || (git commit -m "Actualizar registro de clips [skip ci]" && git push)
