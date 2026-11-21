@@ -1,4 +1,5 @@
 name: Auto Clipper
+run-name: "${{ inputs.url && format('Clip manual - {0}', inputs.url) || 'Clipping programado' }}"
 
 on:
   schedule:
@@ -7,6 +8,9 @@ on:
     inputs:
       url:
         description: "Procesar solo este video o canal (opcional)"
+        required: false
+      campaign:
+        description: "Campaña a usar (reglas, hashtags, cuentas)"
         required: false
       no_publish:
         description: "Solo generar clips, sin publicar"
@@ -66,10 +70,12 @@ jobs:
           TIKTOK_ACCOUNTS_JSON: ${{ secrets.TIKTOK_ACCOUNTS_JSON }}
           FACEBOOK_PAGES_JSON: ${{ secrets.FACEBOOK_PAGES_JSON }}
           INPUT_URL: ${{ inputs.url }}
+          INPUT_CAMPAIGN: ${{ inputs.campaign }}
           INPUT_NO_PUBLISH: ${{ inputs.no_publish }}
         run: |
           ARGS=()
           [ -n "$INPUT_URL" ] && ARGS+=(--url "$INPUT_URL")
+          [ -n "$INPUT_CAMPAIGN" ] && ARGS+=(--campaign "$INPUT_CAMPAIGN")
           [ "$INPUT_NO_PUBLISH" = "true" ] && ARGS+=(--no-publish)
           python -m clipper.main "${ARGS[@]}"
 
@@ -87,5 +93,7 @@ jobs:
         run: |
           git config user.name "auto-clipper"
           git config user.email "actions@users.noreply.github.com"
-          git add state/processed.json
-          git diff --cached --quiet || (git commit -m "Actualizar registro de clips [skip ci]" && git push)
+          git add state/
+          git diff --cached --quiet && exit 0
+          git commit -m "Actualizar registro de clips [skip ci]"
+          for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 5; done

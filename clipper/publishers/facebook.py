@@ -10,7 +10,7 @@ VERSION = "v21.0"
 GRAPH = f"https://graph.facebook.com/{VERSION}"
 
 
-def upload(video_path, caption: str, page: dict) -> str:
+def upload(video_path, caption: str, page: dict) -> dict:
     page_id, token = page["page_id"], page["access_token"]
 
     r = requests.post(f"{GRAPH}/{page_id}/video_reels",
@@ -44,4 +44,4 @@ def upload(video_path, caption: str, page: dict) -> str:
     )
     if not r.json().get("success"):
         raise RuntimeError(f"Facebook finish falló: {r.text[:300]}")
-    return video_id
+    return {"id": video_id, "status": "PUBLICADO", "url": f"https://www.facebook.com/reel/{video_id}"}

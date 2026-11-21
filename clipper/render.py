@@ -5,6 +5,7 @@ Layouts:
   crop  - recorte fijo al centro
   face  - recorte que sigue la cara (OpenCV) con movimiento de cámara suave
   split - facecam arriba + gameplay abajo (ideal para streams/VODs de juegos)
+  auto  - decide solo: cara pequeña (facecam) -> split, cara grande -> face, sin cara -> blur
 """
 import subprocess
 from pathlib import Path
@@ -76,7 +77,7 @@ def render_clip(src: Path, out: Path, clip: dict, segments: list[dict], cfg: dic
     layout = cfg.get("layout", "blur")
     ass_path = out.with_suffix(".ass")
 
-    if layout in ("face", "split"):
+    if layout in ("face", "split", "auto"):
         # 1) cortar el fragmento a un archivo temporal (30 fps, máx 1080p)
         tmp = out.with_name(out.stem + "_src.mp4")
         _run(["ffmpeg", "-y", "-loglevel", "error", "-ss", f"{start:.2f}", "-i", str(src.resolve()),
@@ -119,6 +120,15 @@ def _render_tracked(tmp: Path, out: Path, ass_path: Path, clip, segments, cfg, l
     dets, fps, n = tracking.track(tmp)
     cap = cv2.VideoCapture(str(tmp))
     fw, fh = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    if layout == "auto":
+        box = tracking.facecam_box(dets)
+        if box is None:
+            cap.release()
+            return False
+        # cara chica respecto al cuadro = facecam en una esquina de un stream
+        layout = "split" if box[2] / fh < cfg.get("auto_facecam_max", 0.2) else "face"
+        print(f"    · layout auto -> {layout}")
 
     if layout == "face":
         path = tracking.smooth_path(dets, n, fw)

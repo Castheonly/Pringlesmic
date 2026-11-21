@@ -1,56 +1,91 @@
 # ============================================================
 #  Configuración del sistema de clipping automático
+#  (también se puede editar desde el panel web)
 # ============================================================
 
-# Fuentes de video largo de donde sacar clips.
-# Puede ser un canal de YouTube, una playlist o un video suelto.
-# IMPORTANTE: usa solo contenido tuyo o con permiso para recortar.
-sources:
-  - url: "https://www.youtube.com/@TU_CANAL/videos"
-    max_new_videos: 1        # cuántos videos nuevos procesar por corrida
-
-limits:
-  max_video_minutes: 90      # ignora videos más largos (GitHub Actions tiene 6h máx)
-  clips_per_video: 3         # cuántos clips sacar de cada video
-  min_clip_seconds: 20
-  max_clip_seconds: 60
-
-transcription:
-  model: "small"             # tiny | base | small | medium (más grande = mejor y más lento)
-  language: "es"             # null para detección automática
-
-highlights:
-  model: "claude-opus-5-5"   # modelo de Claude que elige los mejores momentos
-  effort: "medium"
-  extra_instructions: >
-    Prioriza reacciones fuertes (gritos, risas, sorpresa), momentos épicos o
-    graciosos del juego, fails y opiniones polémicas. Que tenga un gancho en
-    los primeros 3 segundos y se entienda solo, sin contexto previo.
-
-render:
-  # split = facecam arriba + gameplay abajo (ideal para streams de GTA / juegos)
-  # face  = recorte vertical que sigue la cara (podcasts, vlogs, reacciones)
-  # blur  = video completo al centro con fondo difuminado
-  # crop  = recorte fijo al centro
-  # (si no detecta ninguna cara, split/face caen automáticamente a blur)
-  layout: "split"
-  split_top_ratio: 0.45      # qué parte de la pantalla ocupa la facecam
-  split_face_zoom: 3.2       # más alto = se ve más alrededor de la cara
-  subtitles: true
-  words_per_caption: 3
-  font: "Montserrat ExtraBold"
-  font_size: 82
-  highlight_color: "&H0000FFFF"  # amarillo (formato ASS: &HAABBGGRR)
-  show_title_seconds: 3      # muestra el título/gancho arriba los primeros N segundos (0 = no)
-
-publish:
-  enabled: true              # false = solo genera los clips (se descargan como artefacto)
-  delay_between_posts_seconds: 60
-  tiktok:
+# ---------- CAMPAÑAS ----------
+# Cada campaña = un creador o marca que te paga por clips (o tu propio canal).
+# Fuentes válidas: canales/videos de YouTube, VODs de Twitch y Kick, y +1000 sitios (yt-dlp).
+# IMPORTANTE: recorta solo contenido tuyo o de campañas que te autoricen.
+campaigns:
+  - name: "mi-canal"
     enabled: true
-    # inbox  = sube como borrador a tu bandeja de TikTok (no requiere auditoría de la app)
-    # direct = publica directo (requiere que TikTok apruebe tu app; si no, solo SELF_ONLY)
-    mode: "inbox"
-    privacy_level: "PUBLIC_TO_EVERYONE"
-  facebook:
-    enabled: true            # publica como Reel en tus páginas de Facebook
+    sources:
+      - url: "https://www.youtube.com/@TU_CANAL/videos"
+        max_new_videos: 1
+    language: "es"
+    layout: "auto"
+    clips_per_video: 3
+    rules: ""                    # reglas de la campaña que Claude debe respetar al elegir clips
+    caption_suffix: ""           # texto obligatorio en cada post (ej: "Sígueme en Twitch: xxx")
+    required_hashtags: []        # hashtags obligatorios de la campaña
+    tiktok_accounts: []          # vacío = todas tus cuentas de TikTok
+    facebook_pages: []           # vacío = todas tus páginas de Facebook
+    publish: true
+
+  - name: "ejemplo-campaña-streamer"
+    enabled: false               # actívala cuando tengas una campaña real
+    sources:
+      - url: "https://www.twitch.tv/NOMBRE/videos?filter=archives"
+        max_new_videos: 1
+    language: null               # null = detectar idioma automáticamente
+    layout: "split"
+    clips_per_video: 5
+    min_clip_seconds: 15
+    max_clip_seconds: 45
+    rules: "Nada de clips con lenguaje ofensivo. El clip debe mostrar la reacción del streamer."
+    caption_suffix: "Clip de @NOMBRE 🔴 en vivo en twitch.tv/NOMBRE"
+    required_hashtags: ["NOMBRE", "clips"]
+    branded_content: true        # marca el post como contenido pagado en TikTok
+    publish: true
+
+# ---------- VALORES POR DEFECTO (se aplican a todas las campañas) ----------
+defaults:
+  limits:
+    max_video_minutes: 600       # streams de hasta 10 h
+    max_full_transcribe_minutes: 45  # más largo que esto -> solo transcribe los tramos con más reacción
+    long_stream_windows: 8       # cuántos tramos analizar en streams largos
+    download_max_height: 1080
+    clips_per_video: 3
+    min_clip_seconds: 20
+    max_clip_seconds: 60
+
+  transcription:
+    model: "small"               # tiny | base | small | medium
+    language: null
+
+  highlights:
+    model: "claude-opus-5-5"
+    effort: "medium"
+    extra_instructions: >
+      Prioriza reacciones fuertes (gritos, risas, sorpresa), momentos épicos o
+      graciosos, fails, opiniones polémicas y datos sorprendentes. Que tenga un
+      gancho en los primeros 3 segundos y se entienda solo, sin contexto previo.
+
+  render:
+    # auto  = decide solo (facecam chica -> split, cara grande -> face, sin cara -> blur)
+    # split = facecam arriba + juego/pantalla abajo
+    # face  = recorte vertical que sigue la cara
+    # blur  = video completo con fondo difuminado
+    # crop  = recorte fijo al centro
+    layout: "auto"
+    auto_facecam_max: 0.2
+    split_top_ratio: 0.45
+    split_face_zoom: 3.2
+    subtitles: true
+    words_per_caption: 3
+    font: "Montserrat ExtraBold"
+    font_size: 82
+    highlight_color: "&H0000FFFF"
+    show_title_seconds: 3
+
+  publish:
+    enabled: true
+    delay_between_posts_seconds: 60
+    tiktok:
+      enabled: true
+      mode: "inbox"              # inbox = borrador en tu app | direct = publica solo (requiere app auditada)
+      privacy_level: "PUBLIC_TO_EVERYONE"
+      branded_content: false
+    facebook:
+      enabled: true
