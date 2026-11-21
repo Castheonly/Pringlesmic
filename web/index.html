@@ -135,6 +135,28 @@ pre{white-space:pre-wrap;font-size:13px;background:var(--bg);padding:10px;border
 <!-- CAMPAÑAS -->
 <section data-view="camps" class="hidden">
   <div class="card">
+    <h2>Agregar campaña desde su página</h2>
+    <p class="muted">Pega el link de la campaña (Whop, web del creador, Discord, etc.). Claude la lee, extrae fuentes, reglas, hashtags y pago, y la deja funcionando sola.</p>
+    <label>Link de la campaña</label>
+    <input id="i-url" placeholder="https://whop.com/...">
+    <label>Reglas o texto de la campaña (opcional; úsalo si la página pide iniciar sesión)</label>
+    <textarea id="i-notes" placeholder="Pega aquí las reglas, el pago, los hashtags…"></textarea>
+    <p></p>
+    <button class="btn primary" id="i-go">🔎 Revisar y agregar</button>
+    <div class="list" id="i-list" style="margin-top:10px"></div>
+  </div>
+  <div class="card">
+    <h2>Cuentas que sigo siempre</h2>
+    <p class="muted">Agrega un canal de YouTube, Twitch o Kick: cada vez que suba algo nuevo se recorta solo.</p>
+    <div class="row">
+      <div style="flex:2"><label>Link del canal</label><input id="w-url" placeholder="https://www.twitch.tv/nombre/videos?filter=archives"></div>
+      <div><label>Dentro de la campaña</label><select id="w-camp"></select></div>
+    </div>
+    <p></p>
+    <button class="btn" id="w-go">+ Seguir cuenta</button>
+    <div class="list" id="w-list" style="margin-top:10px"></div>
+  </div>
+  <div class="card">
     <div class="row"><h2 style="margin:0">Tus campañas</h2>
       <div style="flex:0"><button class="btn primary small" id="k-add">+ Nueva campaña</button></div></div>
     <div class="list" id="k-list"></div>
@@ -199,7 +221,7 @@ const store = {
   set(k,v){ try { localStorage.setItem(k,v); } catch {} },
 };
 let conn = { owner: store.get("owner"), repo: store.get("repo"), branch: store.get("branch") || "main", token: store.get("token") };
-let config = null, configSha = null, subs = [], editing = null;
+let config = null, configSha = null, subs = [], editing = null, inbox = [], inboxSha = null;
 
 function toast(msg, ms = 3000){ const t = $("#toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = "none", ms); }
 
@@ -228,6 +250,7 @@ async function load(){
     config.campaigns = config.campaigns || [];
   } catch (e){ toast("No pude leer config.yaml: " + e.message, 6000); return; }
   try { subs = JSON.parse((await readFile("state/submissions.json")).text); } catch { subs = []; }
+  try { const f = await readFile("state/campaign_inbox.json"); inbox = JSON.parse(f.text); inboxSha = f.sha; } catch { inbox = []; inboxSha = null; }
   subs.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
   renderAll();
   loadRuns();
@@ -241,9 +264,29 @@ function renderAll(){
   $("#home-clips").innerHTML = subs.slice(0, 5).map(clipHtml).join("") || `<p class="muted">Todavía no hay clips.</p>`;
   const opts = config.campaigns.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join("");
   $("#n-camp").innerHTML = opts;
+  $("#w-camp").innerHTML = opts;
   const cur = $("#c-filter").value;
   $("#c-filter").innerHTML = `<option value="">Todas</option>` + opts; $("#c-filter").value = cur;
-  renderClips(); renderCamps();
+  renderClips(); renderCamps(); renderInbox(); renderWatch();
+}
+
+const STATUS = { pending: ["warn", "revisando…"], added: ["ok", "agregada"], rejected: ["err", "no es campaña"], error: ["err", "error"] };
+function renderInbox(){
+  $("#i-list").innerHTML = inbox.slice().reverse().slice(0, 15).map(e => {
+    const [cls, txt] = STATUS[e.status] || ["", e.status];
+    return `<div><div class="row"><div style="flex:3;overflow-wrap:anywhere"><a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.url)}</a></div>
+      <div style="flex:0"><span class="pill ${cls}">${txt}</span></div></div>
+      ${e.campaign ? `<div class="muted">Campaña: <b>${esc(e.campaign)}</b>${e.payout ? " · pago: " + esc(e.payout) : ""}</div>` : ""}
+      ${e.message ? `<div class="muted">${esc(e.message)}</div>` : ""}
+      ${e.notes_for_user ? `<div class="muted">⚠ Tú debes: ${esc(e.notes_for_user)}</div>` : ""}</div>`;
+  }).join("");
+}
+function renderWatch(){
+  const rows = config.campaigns.flatMap(c => (c.sources || []).map(s => ({ camp: c.name, url: s.url, on: c.enabled !== false })));
+  $("#w-list").innerHTML = rows.map(r => `<div class="row"><div style="flex:3;overflow-wrap:anywhere">${esc(r.url)}
+    <div class="muted">${esc(r.camp)}${r.on ? "" : " (pausada)"}</div></div>
+    <div style="flex:0"><button class="btn ghost small" data-unwatch="${esc(r.camp)}|${esc(r.url)}">Dejar de seguir</button></div></div>`).join("")
+    || `<p class="muted">Aún no sigues ninguna cuenta.</p>`;
 }
 
 function postHtml(p){
@@ -269,7 +312,8 @@ function renderClips(){
 function renderCamps(){
   $("#k-list").innerHTML = config.campaigns.map((c, i) => `<div class="row">
     <div><div class="clip-title">${esc(c.name)} ${c.enabled === false ? `<span class="pill">pausada</span>` : `<span class="pill ok">activa</span>`}</div>
-    <div class="muted">${(c.sources || []).length} fuente(s) · ${esc(c.layout || "auto")} · ${subs.filter(s => s.campaign === c.name).length} clips</div></div>
+    <div class="muted">${(c.sources || []).length} fuente(s) · ${esc(c.layout || "auto")} · ${subs.filter(s => s.campaign === c.name).length} clips${c.payout ? " · " + esc(c.payout) : ""}${c.ends ? " · hasta " + esc(c.ends) : ""}</div>
+    ${c.campaign_url ? `<div class="muted"><a href="${esc(c.campaign_url)}" target="_blank" rel="noopener">página de la campaña</a></div>` : ""}</div>
     <div style="flex:0" class="row"><button class="btn ghost small" data-toggle="${i}">${c.enabled === false ? "Activar" : "Pausar"}</button>
     <button class="btn ghost small" data-edit="${i}">Editar</button></div></div>`).join("") || `<p class="muted">Crea tu primera campaña.</p>`;
 }
@@ -390,11 +434,39 @@ $("#c-csv").onclick = () => {
 };
 document.addEventListener("click", e => {
   const cp = e.target.dataset?.copy; if (cp !== undefined){ navigator.clipboard.writeText(cp).then(() => toast("Copiado ✓")); }
+  const uw = e.target.dataset?.unwatch;
+  if (uw !== undefined){
+    const [camp, url] = uw.split(/\|(.+)/); const c = config.campaigns.find(x => x.name === camp);
+    if (c && confirm(`¿Dejar de seguir ${url}?`)){ c.sources = c.sources.filter(s => s.url !== url); guarded(e.target, () => saveConfig(`Dejar de seguir ${url}`)); }
+  }
   const ed = e.target.dataset?.edit; if (ed !== undefined) openForm(+ed);
   const tg = e.target.dataset?.toggle;
   if (tg !== undefined){ const c = config.campaigns[+tg]; c.enabled = c.enabled === false; guarded(e.target, () => saveConfig(`${c.enabled ? "Activar" : "Pausar"} campaña ${c.name}`)); }
 });
 $("#k-add").onclick = () => openForm(null);
+$("#i-go").onclick = e => {
+  const url = $("#i-url").value.trim();
+  if (!/^https?:\/\//.test(url)) return toast("Pega el link de la campaña");
+  guarded(e.target, async () => {
+    inbox.push({ url, notes: $("#i-notes").value.trim(), status: "pending", added_at: new Date().toISOString() });
+    const r = await gh(`/contents/state/campaign_inbox.json`, { method: "PUT", body: JSON.stringify({
+      message: "Nueva campaña por revisar", content: b64enc(JSON.stringify(inbox, null, 2) + "\n"), sha: inboxSha || undefined, branch: conn.branch }) });
+    inboxSha = r.content.sha;
+    $("#i-url").value = ""; $("#i-notes").value = ""; renderInbox();
+    await dispatch({ only_intake: "true" });
+    toast("Revisando la campaña… en 1–2 minutos aparece aquí. Toca ↻ para actualizar.", 5000);
+  });
+};
+$("#w-go").onclick = e => {
+  const url = $("#w-url").value.trim(), c = config.campaigns.find(x => x.name === $("#w-camp").value);
+  if (!/^https?:\/\//.test(url)) return toast("Pega el link del canal");
+  if (!c) return toast("Primero crea una campaña");
+  c.sources = c.sources || [];
+  if (c.sources.some(s => s.url === url)) return toast("Ya la sigues");
+  c.sources.push({ url, max_new_videos: 1 });
+  $("#w-url").value = "";
+  guarded(e.target, () => saveConfig(`Seguir ${url} en ${c.name}`));
+};
 $("#f-cancel").onclick = () => $("#k-form").classList.add("hidden");
 $("#f-save").onclick = saveForm;
 $("#f-delete").onclick = () => {

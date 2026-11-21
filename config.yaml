@@ -21,6 +21,7 @@ campaigns:
     required_hashtags: []        # hashtags obligatorios de la campaña
     tiktok_accounts: []          # vacío = todas tus cuentas de TikTok
     facebook_pages: []           # vacío = todas tus páginas de Facebook
+    platforms: ["tiktok", "facebook"]
     publish: true
 
   - name: "ejemplo-campaña-streamer"
@@ -37,7 +38,14 @@ campaigns:
     caption_suffix: "Clip de @NOMBRE 🔴 en vivo en twitch.tv/NOMBRE"
     required_hashtags: ["NOMBRE", "clips"]
     branded_content: true        # marca el post como contenido pagado en TikTok
+    ends: "2027-01-31"           # después de esta fecha deja de procesarla
     publish: true
+
+# ---------- REVISIÓN AUTOMÁTICA DE CAMPAÑAS ----------
+# Pegas el link de una campaña en el panel -> Claude la lee y la agrega aquí sola.
+intake:
+  auto_activate: true          # true = la campaña nueva empieza a generar y publicar clips sola
+  model: "claude-opus-5-5"
 
 # ---------- VALORES POR DEFECTO (se aplican a todas las campañas) ----------
 defaults:

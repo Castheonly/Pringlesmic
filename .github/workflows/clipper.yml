@@ -1,5 +1,5 @@
 name: Auto Clipper
-run-name: "${{ inputs.url && format('Clip manual - {0}', inputs.url) || 'Clipping programado' }}"
+run-name: "${{ inputs.url && format('Clip manual - {0}', inputs.url) || (inputs.only_intake && 'Revisar campañas nuevas' || 'Clipping programado') }}"
 
 on:
   schedule:
@@ -14,6 +14,10 @@ on:
         required: false
       no_publish:
         description: "Solo generar clips, sin publicar"
+        type: boolean
+        default: false
+      only_intake:
+        description: "Solo revisar campañas nuevas (no generar clips)"
         type: boolean
         default: false
 
@@ -36,15 +40,25 @@ jobs:
           python-version: "3.12"
           cache: pip
 
+      - name: Revisar campañas nuevas
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          pip install -q anthropic pyyaml
+          python -m clipper.campaign_intake
+
       - name: Instalar ffmpeg y fuentes
+        if: ${{ !inputs.only_intake }}
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg fonts-montserrat
 
       - name: Instalar dependencias
+        if: ${{ !inputs.only_intake }}
         run: pip install -r requirements.txt
 
       - name: Cache de modelos (Whisper + detector de caras)
+        if: ${{ !inputs.only_intake }}
         uses: actions/cache@v4
         with:
           path: |
@@ -54,6 +68,7 @@ jobs:
           restore-keys: whisper-
 
       - name: Cookies de YouTube (opcional)
+        if: ${{ !inputs.only_intake }}
         env:
           YT_COOKIES: ${{ secrets.YT_COOKIES }}
         run: |
@@ -63,6 +78,7 @@ jobs:
           fi
 
       - name: Generar y publicar clips
+        if: ${{ !inputs.only_intake }}
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
@@ -93,7 +109,7 @@ jobs:
         run: |
           git config user.name "auto-clipper"
           git config user.email "actions@users.noreply.github.com"
-          git add state/
+          git add state/ config.yaml
           git diff --cached --quiet && exit 0
           git commit -m "Actualizar registro de clips [skip ci]"
           for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 5; done

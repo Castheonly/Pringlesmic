@@ -82,10 +82,11 @@ def _wanted(accounts: list[dict], names: list | None) -> list[dict]:
 def publish(path: Path, caption: str, cfg: dict, camp: dict) -> list[dict]:
     posts = []
     targets = []
-    if cfg["tiktok"].get("enabled"):
+    allowed = camp.get("platforms") or ["tiktok", "facebook"]
+    if cfg["tiktok"].get("enabled") and "tiktok" in allowed:
         for acc in _wanted(_accounts("TIKTOK_ACCOUNTS_JSON"), camp.get("tiktok_accounts")):
             targets.append(("tiktok", acc.get("name", "?"), lambda a=acc: tiktok.upload(path, caption, a, cfg["tiktok"])))
-    if cfg["facebook"].get("enabled"):
+    if cfg["facebook"].get("enabled") and "facebook" in allowed:
         for page in _wanted(_accounts("FACEBOOK_PAGES_JSON"), camp.get("facebook_pages")):
             targets.append(("facebook", page.get("name", page.get("page_id")), lambda p=page: facebook.upload(path, caption, p)))
     for platform, account, fn in targets:
@@ -186,6 +187,9 @@ def main() -> None:
     failures = 0
     for camp in camps:
         if not camp.get("enabled", True):
+            continue
+        if camp.get("ends") and str(camp["ends"]) < datetime.now(timezone.utc).date().isoformat():
+            print(f"[{camp['name']}] campaña terminada ({camp['ends']}), la salto")
             continue
         cfg = campaign_config(defaults, camp)
         do_publish = cfg["publish"].get("enabled", False) and not args.no_publish

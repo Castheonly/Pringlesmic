@@ -53,6 +53,22 @@ Cada campaña es un bloque en `config.yaml`, o se crea desde el panel, con:
 - **a qué cuentas** de TikTok y Facebook se publica
 - **contenido pagado**: marca el post como promoción en TikTok, algo que muchas campañas exigen
 
+### Agregar campañas con solo pegar el link
+En el panel → **Campañas → "Agregar campaña desde su página"**, pega el link de la campaña (Whop, la
+web del creador, un post de Discord, etc.). Si la página pide iniciar sesión, pega también el texto
+de las reglas. En 1–2 minutos Claude:
+1. lee la página y extrae de dónde sacar clips, reglas, hashtags y menciones obligatorias, duración,
+   plataformas aceptadas, pago y fecha de término;
+2. crea la campaña y la deja **activa** (`intake.auto_activate` en `config.yaml`);
+3. te avisa en el panel lo que solo tú puedes hacer, como unirte a la campaña o vincular tu cuenta.
+
+Por seguridad solo acepta fuentes de sitios de video conocidos (YouTube, Twitch, Kick, TikTok, X…)
+e ignora cualquier instrucción escrita en la página. Las campañas vencidas se dejan de procesar solas.
+
+### Cuentas que sigues siempre
+En **Campañas → "Cuentas que sigo siempre"** agregas canales de YouTube, Twitch o Kick. Cada vez
+que suban algo nuevo, se recorta y publica solo con las reglas de esa campaña.
+
 Después de publicar, el panel muestra el link de cada post con un botón "copiar". Así los envías a
 la plataforma de la campaña (Whop Content Rewards, Discord del creador, etc.). Estas plataformas
 no tienen API pública para enviar links, por eso ese paso queda en un clic tuyo.
@@ -123,6 +139,8 @@ python -m clipper.main --url "https://www.twitch.tv/videos/123" --campaign mi-ca
 
 ## Estructura
 - `config.yaml`: campañas y ajustes (también se edita desde el panel).
+- `clipper/campaign_intake.py`: lee las páginas de campañas que pegas y las convierte en campañas.
+- `state/campaign_inbox.json`: campañas por revisar y su resultado.
 - `clipper/sources.py`: busca y descarga videos (yt-dlp).
 - `clipper/audio.py`: curva de volumen, reacciones y tramos clave en streams largos.
 - `clipper/transcribe.py`: Whisper en CPU, completo o por tramos.
