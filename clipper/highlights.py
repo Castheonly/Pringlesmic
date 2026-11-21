@@ -33,12 +33,19 @@ SYSTEM = (
     "Recibes la transcripción con marcas de tiempo de un video largo y eliges los "
     "fragmentos con más potencial de viralizarse. Cada clip debe empezar al inicio de "
     "una frase y terminar en un cierre natural, sin cortar ideas a la mitad. "
+    "Las líneas marcadas con VOLUMEN ALTO indican gritos, risas o reacciones fuertes: "
+    "son buenas candidatas, sobre todo si el clip arranca un poco antes para dar contexto. "
     "Escribe títulos, captions y hashtags en el mismo idioma del video."
 )
 
 
 def _format_transcript(segments: list[dict]) -> str:
-    return "\n".join(f"[{s['start']:.1f}-{s['end']:.1f}] {s['text']}" for s in segments)
+    return "\n".join(
+        f"[{s['start']:.1f}-{s['end']:.1f}]"
+        + (f" (VOLUMEN ALTO +{s['loud_db']} dB)" if s.get("loud_db") else "")
+        + f" {s['text']}"
+        for s in segments
+    )
 
 
 def pick_highlights(segments: list[dict], video_title: str, cfg: dict, limits: dict) -> list[dict]:

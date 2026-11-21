@@ -9,7 +9,7 @@ from pathlib import Path
 
 import yaml
 
-from . import highlights, render, sources, state, transcribe
+from . import audio, highlights, render, sources, state, transcribe
 from .publishers import facebook, tiktok
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -57,7 +57,8 @@ def process_video(video: dict, cfg: dict, do_publish: bool, st: dict) -> None:
     if not segs:
         state.mark(st, video["id"], {"title": video["title"], "clips": [], "note": "sin voz"})
         return
-    print(f"  · {len(segs)} segmentos; pidiendo a Claude los mejores momentos…")
+    audio.annotate_loudness(src, segs)
+    print(f"  · {len(segs)} segmentos ({sum(1 for s in segs if s.get('loud_db'))} con reacción fuerte); pidiendo a Claude los mejores momentos…")
     clips = highlights.pick_highlights(segs, video["title"], cfg["highlights"], cfg["limits"])
 
     done = []

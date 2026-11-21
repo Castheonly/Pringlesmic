@@ -11,18 +11,48 @@ tus cuentas de **TikTok** y tus **páginas de Facebook (Reels)**.
  Canal de YouTube ──► yt-dlp descarga el video nuevo
                           │
                           ▼
-                 faster-whisper transcribe (con tiempos por palabra)
+                 faster-whisper transcribe + detecta picos de volumen (reacciones)
                           │
                           ▼
                  Claude elige los 3 mejores momentos + título, caption y hashtags
                           │
                           ▼
-                 ffmpeg: corte, formato vertical 1080x1920, subtítulos tipo karaoke
+                 OpenCV sigue la cara → facecam arriba + juego abajo (o zoom a la cara)
+                          │
+                          ▼
+                 ffmpeg + libass: vertical 1080x1920, subtítulos tipo karaoke
                           │
              ┌────────────┴────────────┐
              ▼                         ▼
      TikTok (API oficial)     Facebook Reels (Graph API)
 ```
+
+## Qué usa de la lista de los 22 repos
+
+El flujo es "VOD → encontrar la reacción → cortar → acercar → subtitular → enviar", pero
+**automático y en la nube**. Por eso usa solo las herramientas que corren sin pantalla y sin GPU:
+
+| # | Herramienta | Para qué la usa aquí |
+|---|---|---|
+| 01 | yt-dlp | Descargar los VODs / videos fuente |
+| 03 | OpenCV | Detectar y seguir la cara (YuNet) para el recorte vertical |
+| 05 | AI Shorts Generator (idea) | Encontrar destacados: aquí lo hace Claude con la transcripción + picos de audio |
+| 07 | Whisper (faster-whisper) | Transcripción con tiempo por palabra |
+| 12 | Norfair (idea) | Suavizado del movimiento de cámara, implementado simple con zona muerta |
+| 16 | libass (vía ffmpeg) | Subtítulos ASS con estilo y palabra resaltada |
+| 22 | PyAV/ffmpeg | Decodificar y codificar video |
+
+Quedan fuera a propósito: **OBS, Kdenlive, Shotcut y OpenCut** son editores de escritorio (manuales);
+**Real-ESRGAN, RIFE, Demucs y pyannote** necesitan GPU o tardan demasiado en los servidores gratis.
+Se pueden agregar después si consigues un servidor con GPU.
+
+## Layouts (`render.layout`)
+- `split`: facecam arriba + gameplay abajo. Es el formato típico de clips de streamers.
+- `face`: recorte vertical que sigue la cara con movimiento suave (podcasts, reacciones).
+- `blur`: video completo con fondo difuminado (sirve para gameplay sin cámara).
+- `crop`: recorte fijo al centro.
+
+Si no detecta ninguna cara, `split` y `face` pasan solos a `blur`.
 
 ## Costos
 
@@ -85,6 +115,8 @@ python -m clipper.main --url "https://www.youtube.com/watch?v=XXXX" --no-publish
 ## Cómo funciona por dentro
 - `clipper/sources.py`: busca videos nuevos y los descarga (yt-dlp).
 - `clipper/transcribe.py`: transcripción con faster-whisper en CPU.
+- `clipper/audio.py`: marca los segundos con volumen alto (gritos, risas = reacciones).
+- `clipper/tracking.py`: seguimiento facial con OpenCV y suavizado de cámara.
 - `clipper/highlights.py`: Claude elige los momentos (respuesta en JSON validado).
 - `clipper/render.py`: ffmpeg recorta, pasa a vertical y quema subtítulos.
 - `clipper/publishers/`: subida a TikTok y Facebook con las APIs oficiales.
@@ -92,5 +124,5 @@ python -m clipper.main --url "https://www.youtube.com/watch?v=XXXX" --no-publish
 
 ## Problemas conocidos
 - **YouTube bloquea descargas desde servidores** ("Sign in to confirm you're not a bot"): agrega el secret `YT_COOKIES` exportado desde tu navegador con una cuenta secundaria.
-- **Encuadre**: el modo `blur` deja el video completo al centro con fondo difuminado (sirve para cualquier video). El modo `crop` recorta al centro; funciona bien si la persona está centrada.
+- **Derechos de autor**: subir clips de streams de otras personas sin permiso trae reclamos y baneos. Lo más seguro es usar tu propio gameplay (grabado con OBS y subido a YouTube como no listado) o tener acuerdo con el streamer.
 - GitHub Actions corta a las 6 horas; con `max_video_minutes: 90` y el modelo `small` de Whisper hay margen de sobra.
