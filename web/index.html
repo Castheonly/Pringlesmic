@@ -68,6 +68,7 @@ pre{white-space:pre-wrap;font-size:13px;background:var(--bg);padding:10px;border
   <button data-tab="new">Procesar video</button>
   <button data-tab="clips">Clips y links</button>
   <button data-tab="camps">Campañas</button>
+  <button data-tab="accounts">Cuentas</button>
   <button data-tab="runs">Corridas</button>
 </nav>
 <main>
@@ -204,6 +205,37 @@ pre{white-space:pre-wrap;font-size:13px;background:var(--bg);padding:10px;border
   </div>
 </section>
 
+<!-- CUENTAS -->
+<section data-view="accounts" class="hidden">
+  <div class="card">
+    <h2>Tus cuentas para publicar</h2>
+    <p class="muted">Inicias sesión tú, en la página oficial de TikTok o Facebook, una sola vez. El sistema nunca ve tu contraseña: guarda un permiso cifrado para publicar.</p>
+    <div class="list" id="a-list"></div>
+    <p></p>
+    <div class="row" style="justify-content:flex-start">
+      <button class="btn primary" id="a-tt" style="flex:0">Conectar TikTok</button>
+      <button class="btn" id="a-fb" style="flex:0;background:var(--accent-2);color:#fff">Conectar Facebook</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Datos de tus apps de desarrollador</h2>
+    <p class="muted">Son públicos (no son claves secretas). Las claves secretas van en los Secrets de GitHub.</p>
+    <div class="row">
+      <div><label>TikTok Client Key</label><input id="a-ttkey" placeholder="aw1234..."></div>
+      <div><label>Facebook App ID</label><input id="a-fbid" placeholder="1234567890"></div>
+    </div>
+    <label>Redirect URI (cópiala en la configuración de tu app de TikTok)</label>
+    <div class="row"><input id="a-redirect" readonly><div style="flex:0"><button class="btn ghost small" id="a-copyredir">copiar</button></div></div>
+    <p></p>
+    <button class="btn ghost" id="a-save">Guardar</button>
+  </div>
+  <div class="card">
+    <h2>Plataformas de campañas</h2>
+    <p class="muted">Entra a cada una una vez y conecta ahí tu TikTok/Facebook para que midan tus vistas. Después pega el link de cada campaña en "Campañas" y el sistema hace el resto.</p>
+    <div class="list" id="a-platforms"></div>
+  </div>
+</section>
+
 <!-- CORRIDAS -->
 <section data-view="runs" class="hidden">
   <div class="card"><h2>Corridas recientes</h2><div class="list" id="r-list"></div>
@@ -221,7 +253,8 @@ const store = {
   set(k,v){ try { localStorage.setItem(k,v); } catch {} },
 };
 let conn = { owner: store.get("owner"), repo: store.get("repo"), branch: store.get("branch") || "main", token: store.get("token") };
-let config = null, configSha = null, subs = [], editing = null, inbox = [], inboxSha = null;
+let config = null, configSha = null, subs = [], editing = null, inbox = [], inboxSha = null, accs = { tiktok: [], facebook: [] };
+const REDIRECT = location.origin + location.pathname;
 
 function toast(msg, ms = 3000){ const t = $("#toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = "none", ms); }
 
@@ -250,6 +283,7 @@ async function load(){
     config.campaigns = config.campaigns || [];
   } catch (e){ toast("No pude leer config.yaml: " + e.message, 6000); return; }
   try { subs = JSON.parse((await readFile("state/submissions.json")).text); } catch { subs = []; }
+  try { accs = JSON.parse((await readFile("state/accounts_public.json")).text); } catch { accs = { tiktok: [], facebook: [] }; }
   try { const f = await readFile("state/campaign_inbox.json"); inbox = JSON.parse(f.text); inboxSha = f.sha; } catch { inbox = []; inboxSha = null; }
   subs.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
   renderAll();
@@ -267,7 +301,36 @@ function renderAll(){
   $("#w-camp").innerHTML = opts;
   const cur = $("#c-filter").value;
   $("#c-filter").innerHTML = `<option value="">Todas</option>` + opts; $("#c-filter").value = cur;
-  renderClips(); renderCamps(); renderInbox(); renderWatch();
+  renderClips(); renderCamps(); renderInbox(); renderWatch(); renderAccounts();
+  finishOAuth();
+}
+
+function renderAccounts(){
+  const c = config.connect || {};
+  $("#a-ttkey").value = c.tiktok_client_key || ""; $("#a-fbid").value = c.facebook_app_id || "";
+  $("#a-redirect").value = REDIRECT;
+  const rows = [...(accs.tiktok || []).map(a => ["TikTok", "@" + (a.username || a.name), a.connected_at]),
+                ...(accs.facebook || []).map(a => ["Facebook", a.name, a.connected_at])];
+  $("#a-list").innerHTML = rows.map(([p, n, d]) => `<div class="row"><div><span class="pill ok">${p}</span> <b>${esc(n)}</b></div>
+    <div class="muted" style="flex:0;white-space:nowrap">${d ? "conectada " + esc(new Date(d).toLocaleDateString()) : ""}</div></div>`).join("")
+    || `<p class="muted">Aún no conectas ninguna cuenta.</p>`;
+  $("#a-platforms").innerHTML = (config.campaign_platforms || []).map(p => `<div class="row"><div><b>${esc(p.name)}</b><div class="muted">${esc(p.note || "")}</div></div>
+    <div style="flex:0"><a class="btn ghost small" href="${esc(p.url)}" target="_blank" rel="noopener">Abrir</a></div></div>`).join("");
+}
+
+function finishOAuth(){
+  const q = new URLSearchParams(location.search);
+  if (!q.get("code") || !q.get("state")) return;
+  let expected = ""; try { expected = sessionStorage.getItem("tt_state") || ""; } catch {}
+  history.replaceState(null, "", REDIRECT);
+  if (q.get("state") !== expected) return toast("La conexión con TikTok no coincide; inténtalo de nuevo.", 6000);
+  dispatchConnect("tiktok", q.get("code"), REDIRECT);
+}
+async function dispatchConnect(platform, value, redirect_uri = ""){
+  try {
+    await gh(`/actions/workflows/connect.yml/dispatches`, { method: "POST", body: JSON.stringify({ ref: conn.branch, inputs: { platform, value, redirect_uri } }) });
+    toast(`Conectando ${platform}… en ~1 minuto aparece en "Cuentas" (toca ↻).`, 6000);
+  } catch (e){ toast(e.message, 6000); }
 }
 
 const STATUS = { pending: ["warn", "revisando…"], added: ["ok", "agregada"], rejected: ["err", "no es campaña"], error: ["err", "error"] };
@@ -444,6 +507,30 @@ document.addEventListener("click", e => {
   if (tg !== undefined){ const c = config.campaigns[+tg]; c.enabled = c.enabled === false; guarded(e.target, () => saveConfig(`${c.enabled ? "Activar" : "Pausar"} campaña ${c.name}`)); }
 });
 $("#k-add").onclick = () => openForm(null);
+$("#a-copyredir").onclick = () => navigator.clipboard.writeText(REDIRECT).then(() => toast("Copiado ✓"));
+$("#a-save").onclick = e => {
+  config.connect = { ...(config.connect || {}), tiktok_client_key: $("#a-ttkey").value.trim(), facebook_app_id: $("#a-fbid").value.trim() };
+  guarded(e.target, () => saveConfig("Datos de apps de TikTok/Facebook"));
+};
+$("#a-tt").onclick = () => {
+  const key = config.connect?.tiktok_client_key;
+  if (!key) return toast("Primero guarda tu TikTok Client Key abajo");
+  const st = crypto.getRandomValues(new Uint32Array(4)).join("");
+  try { sessionStorage.setItem("tt_state", st); } catch {}
+  const scope = config.connect?.tiktok_scopes || "user.info.basic,user.info.profile,video.upload,video.publish";
+  location.href = "https://www.tiktok.com/v2/auth/authorize/?" + new URLSearchParams({ client_key: key, scope, response_type: "code", redirect_uri: REDIRECT, state: st });
+};
+$("#a-fb").onclick = () => {
+  const appId = config.connect?.facebook_app_id;
+  if (!appId) return toast("Primero guarda tu Facebook App ID abajo");
+  const login = () => FB.login(r => {
+    if (r.authResponse?.accessToken) dispatchConnect("facebook", r.authResponse.accessToken);
+    else toast("No se completó el inicio de sesión de Facebook");
+  }, { scope: "pages_show_list,pages_read_engagement,pages_manage_posts" });
+  if (window.FB) return login();
+  window.fbAsyncInit = () => { FB.init({ appId, version: "v21.0" }); login(); };
+  const sc = document.createElement("script"); sc.src = "https://connect.facebook.net/es_LA/sdk.js"; sc.async = true; document.body.appendChild(sc);
+};
 $("#i-go").onclick = e => {
   const url = $("#i-url").value.trim();
   if (!/^https?:\/\//.test(url)) return toast("Pega el link de la campaña");

@@ -33,7 +33,11 @@ def get_access_token(refresh_token: str) -> dict:
 
 def upload(video_path, caption: str, account: dict, cfg: dict) -> dict:
     """Sube el video. Devuelve {"id", "status", "url"} (url solo si ya quedó publicado)."""
-    token = get_access_token(account["refresh_token"])["access_token"]
+    tok = get_access_token(account["refresh_token"])
+    token = tok["access_token"]
+    if tok.get("refresh_token") and tok["refresh_token"] != account["refresh_token"]:
+        account["refresh_token"] = tok["refresh_token"]   # TikTok rotó el token: se guarda al final
+        account["_dirty"] = True
     size = os.path.getsize(video_path)
     chunk = size if size <= CHUNK else CHUNK
     total = 1 if size <= CHUNK else size // CHUNK  # el último chunk absorbe el resto

@@ -41,6 +41,23 @@ campaigns:
     ends: "2027-01-31"           # después de esta fecha deja de procesarla
     publish: true
 
+# ---------- CONEXIÓN DE CUENTAS (datos públicos de tus apps; las claves van en Secrets) ----------
+connect:
+  tiktok_client_key: ""
+  facebook_app_id: ""
+
+# ---------- PLATAFORMAS DE CAMPAÑAS DONDE ESTÁS REGISTRADO ----------
+campaign_platforms:
+  - name: "QuantyClips"
+    url: "https://quantyclips.com/"
+    note: "Conecta tu TikTok en tu perfil de clipero"
+  - name: "Reach Clipping"
+    url: "https://reachclipping.com/"
+    note: "Únete a campañas y conecta tus cuentas"
+  - name: "Content Rewards"
+    url: "https://contentrewards.com/"
+    note: "Únete a cada campaña antes de publicar"
+
 # ---------- REVISIÓN AUTOMÁTICA DE CAMPAÑAS ----------
 # Pegas el link de una campaña en el panel -> Claude la lee y la agrega aquí sola.
 intake:

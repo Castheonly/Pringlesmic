@@ -13,7 +13,7 @@ from pathlib import Path
 
 import yaml
 
-from . import audio, highlights, render, sources, state, transcribe
+from . import accounts, audio, highlights, render, sources, state, transcribe
 from .publishers import facebook, tiktok
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -61,9 +61,7 @@ def load_config(path: Path) -> tuple[dict, list[dict]]:
     return defaults, camps
 
 
-def _accounts(env_name: str) -> list[dict]:
-    raw = os.environ.get(env_name, "").strip()
-    return json.loads(raw) if raw else []
+ACCOUNTS: dict = {"tiktok": [], "facebook": []}
 
 
 def _caption(clip: dict, camp: dict) -> str:
@@ -84,10 +82,10 @@ def publish(path: Path, caption: str, cfg: dict, camp: dict) -> list[dict]:
     targets = []
     allowed = camp.get("platforms") or ["tiktok", "facebook"]
     if cfg["tiktok"].get("enabled") and "tiktok" in allowed:
-        for acc in _wanted(_accounts("TIKTOK_ACCOUNTS_JSON"), camp.get("tiktok_accounts")):
+        for acc in _wanted(ACCOUNTS["tiktok"], camp.get("tiktok_accounts")):
             targets.append(("tiktok", acc.get("name", "?"), lambda a=acc: tiktok.upload(path, caption, a, cfg["tiktok"])))
     if cfg["facebook"].get("enabled") and "facebook" in allowed:
-        for page in _wanted(_accounts("FACEBOOK_PAGES_JSON"), camp.get("facebook_pages")):
+        for page in _wanted(ACCOUNTS["facebook"], camp.get("facebook_pages")):
             targets.append(("facebook", page.get("name", page.get("page_id")), lambda p=page: facebook.upload(path, caption, p)))
     for platform, account, fn in targets:
         try:
@@ -182,6 +180,8 @@ def main() -> None:
     if args.url:
         camps = [{**camps[0], "enabled": True, "sources": [{"url": args.url, "max_new_videos": 1}]}]
 
+    ACCOUNTS.update(accounts.load())
+    print(f"Cuentas: {len(ACCOUNTS['tiktok'])} TikTok, {len(ACCOUNTS['facebook'])} Facebook")
     st = state.load()
     summary("| Campaña | Clip | Score | Publicado |\n|---|---|---|---|")
     failures = 0
@@ -211,6 +211,11 @@ def main() -> None:
                 except Exception:
                     failures += 1
                     traceback.print_exc()
+    if any(a.pop("_dirty", False) for a in ACCOUNTS["tiktok"]):
+        try:
+            accounts.save(ACCOUNTS)
+        except Exception as e:
+            print(f"! No pude guardar los tokens renovados: {e}")
     if failures:
         raise SystemExit(1)
 

@@ -83,7 +83,11 @@ no tienen API pública para enviar links, por eso ese paso queda en un clic tuyo
 - `blur`: video completo con fondo difuminado.
 - `crop`: recorte fijo al centro.
 
-## Instalación (una sola vez, ~30 min)
+## Instalación (una sola vez, ~40 min)
+
+> 🔒 **Nunca compartas tus contraseñas** (ni conmigo, ni en el repo). Las cuentas se conectan con el
+> inicio de sesión oficial de TikTok y Facebook: tú inicias sesión y el sistema guarda un permiso
+> cifrado para publicar. Ese permiso lo puedes revocar cuando quieras desde TikTok o Facebook.
 
 ### 1. Secrets en GitHub
 Repo → **Settings → Secrets and variables → Actions → New repository secret**
@@ -91,44 +95,47 @@ Repo → **Settings → Secrets and variables → Actions → New repository sec
 | Secret | Qué es |
 |---|---|
 | `ANTHROPIC_API_KEY` | API key de https://console.anthropic.com |
+| `ACCOUNTS_KEY` | Cualquier frase larga y aleatoria (40+ caracteres). Cifra los permisos de tus cuentas. **No la pierdas** |
 | `TIKTOK_CLIENT_KEY` / `TIKTOK_CLIENT_SECRET` | De tu app en https://developers.tiktok.com |
-| `TIKTOK_ACCOUNTS_JSON` | `[{"name":"cuenta1","username":"tu_usuario","refresh_token":"..."}]` |
-| `FACEBOOK_PAGES_JSON` | `[{"name":"MiPagina","page_id":"123","access_token":"..."}]` |
-| `YT_COOKIES` *(opcional)* | Cookies de YouTube (formato Netscape) si YouTube bloquea las descargas |
+| `FACEBOOK_APP_ID` / `FACEBOOK_APP_SECRET` | De tu app en https://developers.facebook.com |
+| `YT_COOKIES` *(opcional)* | Cookies de YouTube si YouTube bloquea las descargas |
 
-`username` en TikTok sirve para armar el link del post que envías a las campañas.
-
-### 2. TikTok
-1. https://developers.tiktok.com → *Manage apps* → crea una app con **Content Posting API** y **Login Kit**.
-2. Permisos: `video.upload`; agrega `video.publish` si quieres publicación directa.
-3. Autoriza tu cuenta con OAuth y guarda el `refresh_token` (dura 365 días).
-4. `publish.tiktok.mode` en `config.yaml`:
-   - `inbox` *(por defecto)*: el clip llega como **borrador** a tu app de TikTok y solo tocas "Publicar". No requiere auditoría.
-   - `direct`: publica solo y deja el link listo para la campaña. **Requiere que TikTok audite tu app**; mientras tanto los posts quedan privados.
-
-### 3. Facebook
-1. App tipo *Business* en https://developers.facebook.com.
-2. En el Graph API Explorer pide `pages_show_list`, `pages_read_engagement` y `pages_manage_posts`.
-3. Cambia el token por uno de larga duración y llama a `GET /me/accounts`: el token de página que devuelve **no vence**.
-
-### 4. Activar
-Haz merge a `main` y habilita los workflows en la pestaña **Actions**.
-
-### 5. Panel web (tu "app")
+### 2. Publica el panel (tu "app")
 **Opción A — GitHub Pages** (gratis si el repo es público): Settings → Pages → Source: *GitHub Actions*.
-El workflow `pages.yml` lo publica en `https://TU_USUARIO.github.io/Pringlesmic/`.
+Queda en `https://TU_USUARIO.github.io/Pringlesmic/`.
 
 **Opción B — Cloudflare Pages** (gratis con repo privado): dash.cloudflare.com → Workers & Pages →
 Create → Pages → conecta el repo, sin comando de build, carpeta de salida `web`.
 
-Luego, en el panel:
-1. Crea un token en github.com → Settings → Developer settings → **Fine-grained tokens**: solo este
-   repo, permisos *Contents: Read and write* y *Actions: Read and write*.
-2. Abre el panel, pon usuario, repo y token. El token queda guardado solo en tu navegador.
-3. En el celular: menú del navegador → **"Agregar a pantalla de inicio"** y queda como app.
+Abre el panel y conecta tu repo con un token *fine-grained* (github.com → Settings → Developer settings →
+Fine-grained tokens): solo este repo, con *Contents: Read and write* y *Actions: Read and write*.
+En el celular: menú del navegador → **"Agregar a pantalla de inicio"**.
 
-La página no contiene datos ni claves; todo lo pide a GitHub con tu token. Por eso alojarla en un
-sitio público es seguro.
+### 3. TikTok (tu cuenta de clips que ya tienes)
+1. https://developers.tiktok.com → *Manage apps* → crea una app con **Login Kit** y **Content Posting API**.
+2. Scopes: `user.info.basic`, `user.info.profile`, `video.upload`, `video.publish`.
+3. En *Login Kit → Redirect URI* pega la URL que muestra el panel en **Cuentas** (botón "copiar").
+4. En el panel → **Cuentas**: guarda tu *Client Key* → **Conectar TikTok** → inicias sesión y aceptas.
+5. Modo de publicación (`defaults.publish.tiktok.mode`):
+   - `inbox` *(por defecto)*: llega como **borrador** a tu app de TikTok y tocas "Publicar". No requiere auditoría.
+   - `direct`: se publica solo y el link queda listo para las campañas. **Requiere que TikTok audite tu app**
+     (en el portal: *Submit for review*); antes de eso los posts quedan privados.
+
+### 4. Facebook (cuenta de clips nueva)
+1. Con tu Facebook personal crea una **Página** para los clips (facebook.com/pages/create). Es gratis
+   y no necesitas otra cuenta personal; tener cuentas personales extra va contra las reglas de Facebook.
+2. https://developers.facebook.com → crea una app tipo *Business* → agrega **Facebook Login for Business**.
+3. En la app, *App Domains* y *Allowed Domains for the JavaScript SDK*: agrega el dominio de tu panel.
+4. En el panel → **Cuentas**: guarda tu *App ID* → **Conectar Facebook** → eliges tu página y aceptas.
+   El permiso de página que se guarda **no vence**.
+
+### 5. Plataformas de campañas (QuantyClips, Reach Clipping, Content Rewards)
+Entra tú a cada una y **conecta ahí tu TikTok y tu página de Facebook**; así miden tus vistas y te pagan.
+Después pega el link de cada campaña en el panel → **Campañas** y el sistema la revisa y la agrega sola.
+La campaña de Content Rewards que compartiste ya está en la cola de revisión (`state/campaign_inbox.json`).
+
+### 6. Activar
+Haz merge a `main` y habilita los workflows en la pestaña **Actions**.
 
 ## Uso local (opcional)
 ```bash
@@ -139,6 +146,7 @@ python -m clipper.main --url "https://www.twitch.tv/videos/123" --campaign mi-ca
 
 ## Estructura
 - `config.yaml`: campañas y ajustes (también se edita desde el panel).
+- `clipper/accounts.py`: conexión de cuentas (OAuth) y permisos cifrados en `state/accounts.enc`.
 - `clipper/campaign_intake.py`: lee las páginas de campañas que pegas y las convierte en campañas.
 - `state/campaign_inbox.json`: campañas por revisar y su resultado.
 - `clipper/sources.py`: busca y descarga videos (yt-dlp).
