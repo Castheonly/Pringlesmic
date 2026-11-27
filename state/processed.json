@@ -1,1 +1,9 @@
-{}
+{
+  "westcol::01a21906-aa88-7dc7-8ba3-6c95a8ea2f96": {
+    "processed_at": "2026-11-27T22:43:29.196244+00:00",
+    "campaign": "westcol",
+    "title": "10 HORITAS EN EL SETEO RESCATANDO GTA VI",
+    "attempts": 1,
+    "error": "TypeError: open() got an unexpected keyword argument 'metadata_errors'"
+  }
+}
