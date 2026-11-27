@@ -1,0 +1,60 @@
+name: Conectar cuenta
+run-name: "Conectar ${{ inputs.platform }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "tiktok o facebook"
+        required: true
+      value:
+        description: "Código de autorización (TikTok) o token corto (Facebook). Lo llena el panel."
+        required: true
+      redirect_uri:
+        description: "URL del panel (solo TikTok)"
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: accounts
+  cancel-in-progress: false
+
+jobs:
+  connect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ocultar el código en los registros
+        env:
+          VALUE: ${{ inputs.value }}
+        run: echo "::add-mask::$VALUE"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q requests cryptography
+      - name: Conectar
+        env:
+          ACCOUNTS_KEY: ${{ secrets.ACCOUNTS_KEY }}
+          TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+          TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+          FACEBOOK_APP_ID: ${{ secrets.FACEBOOK_APP_ID }}
+          FACEBOOK_APP_SECRET: ${{ secrets.FACEBOOK_APP_SECRET }}
+          PLATFORM: ${{ inputs.platform }}
+          VALUE: ${{ inputs.value }}
+          REDIRECT_URI: ${{ inputs.redirect_uri }}
+        run: |
+          case "$PLATFORM" in
+            tiktok|facebook) ;;
+            *) echo "Plataforma inválida"; exit 1 ;;
+          esac
+          python -m clipper.accounts "$PLATFORM" "$VALUE" "$REDIRECT_URI" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Guardar
+        run: |
+          git config user.name "auto-clipper"
+          git config user.email "actions@users.noreply.github.com"
+          git add state/accounts.enc state/accounts_public.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Cuenta conectada [skip ci]"
+          for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 5; done

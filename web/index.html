@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f1115">
+<title>Clipper Panel</title>
+<link rel="manifest" href="manifest.json">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<style>
+:root{
+  --bg:#f6f7f9;--card:#fff;--text:#16181d;--muted:#667085;--line:#e4e7ec;
+  --accent:#ff2d55;--accent-2:#1877f2;--ok:#12b76a;--warn:#f79009;--err:#f04438;--radius:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1115;--card:#171a21;--text:#eef0f4;--muted:#98a2b3;--line:#262b36;
+}}
+:root[data-theme="dark"]{--bg:#0f1115;--card:#171a21;--text:#eef0f4;--muted:#98a2b3;--line:#262b36}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;gap:10px}
+header h1{font-size:17px;margin:0;flex:1}
+header .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+nav{display:flex;gap:4px;overflow-x:auto;padding:8px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+nav button{border:0;background:none;color:var(--muted);padding:8px 12px;border-radius:999px;font:inherit;white-space:nowrap;cursor:pointer}
+nav button.on{background:var(--text);color:var(--card)}
+main{max-width:980px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+.card h2{font-size:16px;margin:0 0 10px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.stat b{display:block;font-size:26px}
+.stat span{color:var(--muted);font-size:13px}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);font:inherit}
+textarea{min-height:70px;resize:vertical}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1;min-width:140px}
+.check{display:flex;gap:8px;align-items:center;color:var(--text);font-size:14px;margin-top:10px}
+.check input{width:auto}
+.btn{border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;background:var(--text);color:var(--card)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),#ff5e3a);color:#fff}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn.small{padding:6px 10px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:wait}
+.muted{color:var(--muted);font-size:13px}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;background:var(--line)}
+.pill.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.pill.err{background:color-mix(in srgb,var(--err) 18%,transparent);color:var(--err)}
+.pill.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.list>div{padding:12px 0;border-top:1px solid var(--line)}
+.list>div:first-child{border-top:0}
+.clip-title{font-weight:600}
+.links{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.links a,.links span{font-size:13px}
+a{color:var(--accent-2)}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--text);color:var(--card);padding:10px 16px;border-radius:10px;display:none;z-index:9;max-width:90vw}
+.hidden{display:none}
+pre{white-space:pre-wrap;font-size:13px;background:var(--bg);padding:10px;border-radius:10px;margin:6px 0 0}
+</style>
+</head>
+<body>
+<header><span class="dot"></span><h1>Clipper Panel</h1>
+  <button class="btn ghost small" id="refresh" title="Actualizar">↻</button>
+  <button class="btn ghost small" id="logout" title="Configurar conexión">⚙</button>
+</header>
+<nav id="tabs">
+  <button data-tab="home" class="on">Inicio</button>
+  <button data-tab="new">Procesar video</button>
+  <button data-tab="clips">Clips y links</button>
+  <button data-tab="camps">Campañas</button>
+  <button data-tab="accounts">Cuentas</button>
+  <button data-tab="runs">Corridas</button>
+</nav>
+<main>
+
+<!-- CONEXIÓN -->
+<section id="setup" class="card hidden">
+  <h2>Conectar con tu repositorio de GitHub</h2>
+  <p class="muted">El panel no tiene servidor: habla directo con GitHub desde tu navegador. El token se guarda solo en este dispositivo.</p>
+  <div class="row">
+    <div><label>Usuario u organización</label><input id="s-owner" placeholder="Castheonly"></div>
+    <div><label>Repositorio</label><input id="s-repo" placeholder="Pringlesmic"></div>
+    <div><label>Rama</label><input id="s-branch" value="main"></div>
+  </div>
+  <label>Token de GitHub (fine-grained, solo este repo: Contents = Read and write, Actions = Read and write)</label>
+  <input id="s-token" type="password" placeholder="github_pat_...">
+  <p class="muted">Créalo en github.com → Settings → Developer settings → Fine-grained tokens.</p>
+  <button class="btn primary" id="s-save">Conectar</button>
+</section>
+
+<!-- INICIO -->
+<section data-view="home">
+  <div class="card">
+    <div class="grid">
+      <div class="stat"><b id="st-clips">–</b><span>clips generados</span></div>
+      <div class="stat"><b id="st-posts">–</b><span>publicaciones</span></div>
+      <div class="stat"><b id="st-camps">–</b><span>campañas activas</span></div>
+      <div class="stat"><b id="st-last">–</b><span>última corrida</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Automático</h2>
+    <p class="muted">El sistema revisa tus campañas cada 6 horas por su cuenta. Si quieres que corra ya mismo:</p>
+    <button class="btn primary" id="run-now">▶ Correr todas las campañas ahora</button>
+  </div>
+  <div class="card"><h2>Últimos clips</h2><div class="list" id="home-clips"></div></div>
+</section>
+
+<!-- PROCESAR -->
+<section data-view="new" class="hidden">
+  <div class="card">
+    <h2>Procesar un video o stream ahora</h2>
+    <label>Link (YouTube, Twitch, Kick, TikTok, X, Facebook…)</label>
+    <input id="n-url" placeholder="https://www.youtube.com/watch?v=...">
+    <label>Campaña (aplica sus reglas, hashtags y cuentas)</label>
+    <select id="n-camp"></select>
+    <label class="check"><input type="checkbox" id="n-nopub"> Solo generar clips (no publicar)</label>
+    <p></p>
+    <button class="btn primary" id="n-go">✂ Crear clips</button>
+    <p class="muted">Tarda entre 5 y 40 minutos según el largo. Mira el avance en "Corridas".</p>
+  </div>
+</section>
+
+<!-- CLIPS -->
+<section data-view="clips" class="hidden">
+  <div class="card">
+    <div class="row">
+      <div><label>Campaña</label><select id="c-filter"><option value="">Todas</option></select></div>
+      <div style="flex:0"><label>&nbsp;</label><button class="btn ghost" id="c-csv">Descargar CSV</button></div>
+    </div>
+    <p class="muted">Copia los links de cada publicación para enviarlos a la plataforma de la campaña.</p>
+  </div>
+  <div class="card"><div class="list" id="c-list"></div></div>
+</section>
+
+<!-- CAMPAÑAS -->
+<section data-view="camps" class="hidden">
+  <div class="card">
+    <h2>Agregar campaña desde su página</h2>
+    <p class="muted">Pega el link de la campaña (Whop, web del creador, Discord, etc.). Claude la lee, extrae fuentes, reglas, hashtags y pago, y la deja funcionando sola.</p>
+    <label>Link de la campaña</label>
+    <input id="i-url" placeholder="https://whop.com/...">
+    <label>Reglas o texto de la campaña (opcional; úsalo si la página pide iniciar sesión)</label>
+    <textarea id="i-notes" placeholder="Pega aquí las reglas, el pago, los hashtags…"></textarea>
+    <p></p>
+    <button class="btn primary" id="i-go">🔎 Revisar y agregar</button>
+    <div class="list" id="i-list" style="margin-top:10px"></div>
+  </div>
+  <div class="card">
+    <h2>Cuentas que sigo siempre</h2>
+    <p class="muted">Agrega un canal de YouTube, Twitch o Kick: cada vez que suba algo nuevo se recorta solo.</p>
+    <div class="row">
+      <div style="flex:2"><label>Link del canal</label><input id="w-url" placeholder="https://www.twitch.tv/nombre/videos?filter=archives"></div>
+      <div><label>Dentro de la campaña</label><select id="w-camp"></select></div>
+    </div>
+    <p></p>
+    <button class="btn" id="w-go">+ Seguir cuenta</button>
+    <div class="list" id="w-list" style="margin-top:10px"></div>
+  </div>
+  <div class="card">
+    <div class="row"><h2 style="margin:0">Tus campañas</h2>
+      <div style="flex:0"><button class="btn primary small" id="k-add">+ Nueva campaña</button></div></div>
+    <div class="list" id="k-list"></div>
+  </div>
+  <div class="card hidden" id="k-form">
+    <h2 id="k-form-title">Campaña</h2>
+    <div class="row">
+      <div><label>Nombre (sin espacios)</label><input id="f-name"></div>
+      <div><label>Idioma</label><select id="f-language">
+        <option value="">Automático</option><option value="es">Español</option><option value="en">Inglés</option>
+        <option value="pt">Portugués</option><option value="fr">Francés</option><option value="de">Alemán</option>
+        <option value="it">Italiano</option></select></div>
+      <div><label>Formato</label><select id="f-layout">
+        <option value="auto">Auto</option><option value="split">Facecam + juego</option>
+        <option value="face">Seguir cara</option><option value="blur">Fondo difuminado</option>
+        <option value="crop">Recorte al centro</option></select></div>
+    </div>
+    <label>Fuentes: un link por línea (canal de YouTube, VODs de Twitch/Kick, playlist o video)</label>
+    <textarea id="f-sources" placeholder="https://www.youtube.com/@canal/videos&#10;https://www.twitch.tv/nombre/videos?filter=archives"></textarea>
+    <div class="row">
+      <div><label>Videos nuevos por corrida</label><input id="f-maxnew" type="number" min="1" value="1"></div>
+      <div><label>Clips por video</label><input id="f-clips" type="number" min="1" value="3"></div>
+      <div><label>Duración mín (s)</label><input id="f-min" type="number" value="20"></div>
+      <div><label>Duración máx (s)</label><input id="f-max" type="number" value="60"></div>
+    </div>
+    <label>Reglas de la campaña (Claude las respeta al elegir los clips)</label>
+    <textarea id="f-rules"></textarea>
+    <label>Texto obligatorio en cada post</label>
+    <input id="f-suffix" placeholder="Clip de @creador — síguelo en twitch.tv/creador">
+    <label>Mensaje fijo dentro del video (ej: "Sígueme para más clips")</label>
+    <input id="f-msg" placeholder="Sígueme para más clips">
+    <label>Hashtags obligatorios (separados por coma)</label>
+    <input id="f-tags" placeholder="creador, clips">
+    <div class="row">
+      <div><label>Cuentas TikTok (vacío = todas)</label><input id="f-tt" placeholder="cuenta1, cuenta2"></div>
+      <div><label>Páginas Facebook (vacío = todas)</label><input id="f-fb" placeholder="MiPagina"></div>
+    </div>
+    <label class="check"><input type="checkbox" id="f-enabled"> Activa (se procesa automáticamente)</label>
+    <label class="check"><input type="checkbox" id="f-publish"> Publicar automáticamente</label>
+    <label class="check"><input type="checkbox" id="f-branded"> Marcar como contenido pagado en TikTok</label>
+    <p></p>
+    <div class="row" style="justify-content:flex-start">
+      <button class="btn primary" id="f-save" style="flex:0">Guardar</button>
+      <button class="btn ghost" id="f-cancel" style="flex:0">Cancelar</button>
+      <button class="btn ghost" id="f-delete" style="flex:0;color:var(--err)">Eliminar</button>
+    </div>
+  </div>
+</section>
+
+<!-- CUENTAS -->
+<section data-view="accounts" class="hidden">
+  <div class="card">
+    <h2>Tus cuentas para publicar</h2>
+    <p class="muted">Inicias sesión tú, en la página oficial de TikTok o Facebook, una sola vez. El sistema nunca ve tu contraseña: guarda un permiso cifrado para publicar.</p>
+    <div class="list" id="a-list"></div>
+    <p></p>
+    <div class="row" style="justify-content:flex-start">
+      <button class="btn primary" id="a-tt" style="flex:0">Conectar TikTok</button>
+      <button class="btn" id="a-fb" style="flex:0;background:var(--accent-2);color:#fff">Conectar Facebook</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Datos de tus apps de desarrollador</h2>
+    <p class="muted">Son públicos (no son claves secretas). Las claves secretas van en los Secrets de GitHub.</p>
+    <div class="row">
+      <div><label>TikTok Client Key</label><input id="a-ttkey" placeholder="aw1234..."></div>
+      <div><label>Facebook App ID</label><input id="a-fbid" placeholder="1234567890"></div>
+    </div>
+    <label>Redirect URI (cópiala en la configuración de tu app de TikTok)</label>
+    <div class="row"><input id="a-redirect" readonly><div style="flex:0"><button class="btn ghost small" id="a-copyredir">copiar</button></div></div>
+    <p></p>
+    <button class="btn ghost" id="a-save">Guardar</button>
+  </div>
+  <div class="card">
+    <h2>Plataformas de campañas</h2>
+    <p class="muted">Entra a cada una una vez y conecta ahí tu TikTok/Facebook para que midan tus vistas. Después pega el link de cada campaña en "Campañas" y el sistema hace el resto.</p>
+    <div class="list" id="a-platforms"></div>
+  </div>
+</section>
+
+<!-- CORRIDAS -->
+<section data-view="runs" class="hidden">
+  <div class="card"><h2>Corridas recientes</h2><div class="list" id="r-list"></div>
+  <p class="muted">Los videos generados se descargan desde cada corrida en GitHub (sección "Artifacts", disponibles 7 días).</p></div>
+</section>
+</main>
+<div id="toast"></div>
+
+<script>
+const WORKFLOW = "clipper.yml";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store = {
+  get(k){ try { return localStorage.getItem(k) || ""; } catch { return ""; } },
+  set(k,v){ try { localStorage.setItem(k,v); } catch {} },
+};
+let conn = { owner: store.get("owner"), repo: store.get("repo"), branch: store.get("branch") || "main", token: store.get("token") };
+let config = null, configSha = null, subs = [], editing = null, inbox = [], inboxSha = null, accs = { tiktok: [], facebook: [] };
+const REDIRECT = location.origin + location.pathname;
+
+function toast(msg, ms = 3000){ const t = $("#toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = "none", ms); }
+
+async function gh(path, opts = {}){
+  const r = await fetch(`https://api.github.com/repos/${conn.owner}/${conn.repo}${path}`, {
+    ...opts,
+    headers: { Authorization: `Bearer ${conn.token}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", ...(opts.headers || {}) },
+  });
+  if (!r.ok) throw new Error(`GitHub ${r.status}: ${(await r.text()).slice(0, 200)}`);
+  return r.status === 204 ? null : r.json();
+}
+const b64dec = b => new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\n/g, "")), c => c.charCodeAt(0)));
+function b64enc(str){ const bytes = new TextEncoder().encode(str); let bin = ""; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000)); return btoa(bin); }
+
+async function readFile(path){
+  const f = await gh(`/contents/${path}?ref=${encodeURIComponent(conn.branch)}`);
+  return { text: b64dec(f.content), sha: f.sha };
+}
+
+// ---------- carga ----------
+async function load(){
+  if (!conn.owner || !conn.repo || !conn.token){ showSetup(true); return; }
+  showSetup(false);
+  try {
+    const c = await readFile("config.yaml"); config = jsyaml.load(c.text); configSha = c.sha;
+    config.campaigns = config.campaigns || [];
+  } catch (e){ toast("No pude leer config.yaml: " + e.message, 6000); return; }
+  try { subs = JSON.parse((await readFile("state/submissions.json")).text); } catch { subs = []; }
+  try { accs = JSON.parse((await readFile("state/accounts_public.json")).text); } catch { accs = { tiktok: [], facebook: [] }; }
+  try { const f = await readFile("state/campaign_inbox.json"); inbox = JSON.parse(f.text); inboxSha = f.sha; } catch { inbox = []; inboxSha = null; }
+  subs.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+  renderAll();
+  loadRuns();
+}
+
+function renderAll(){
+  const posts = subs.flatMap(s => s.posts || []).filter(p => p.status !== "ERROR");
+  $("#st-clips").textContent = subs.length;
+  $("#st-posts").textContent = posts.length;
+  $("#st-camps").textContent = config.campaigns.filter(c => c.enabled !== false).length;
+  $("#home-clips").innerHTML = subs.slice(0, 5).map(clipHtml).join("") || `<p class="muted">Todavía no hay clips.</p>`;
+  const opts = config.campaigns.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join("");
+  $("#n-camp").innerHTML = opts;
+  $("#w-camp").innerHTML = opts;
+  const cur = $("#c-filter").value;
+  $("#c-filter").innerHTML = `<option value="">Todas</option>` + opts; $("#c-filter").value = cur;
+  renderClips(); renderCamps(); renderInbox(); renderWatch(); renderAccounts();
+  finishOAuth();
+}
+
+function renderAccounts(){
+  const c = config.connect || {};
+  $("#a-ttkey").value = c.tiktok_client_key || ""; $("#a-fbid").value = c.facebook_app_id || "";
+  $("#a-redirect").value = REDIRECT;
+  const rows = [...(accs.tiktok || []).map(a => ["TikTok", "@" + (a.username || a.name), a.connected_at]),
+                ...(accs.facebook || []).map(a => ["Facebook", a.name, a.connected_at])];
+  $("#a-list").innerHTML = rows.map(([p, n, d]) => `<div class="row"><div><span class="pill ok">${p}</span> <b>${esc(n)}</b></div>
+    <div class="muted" style="flex:0;white-space:nowrap">${d ? "conectada " + esc(new Date(d).toLocaleDateString()) : ""}</div></div>`).join("")
+    || `<p class="muted">Aún no conectas ninguna cuenta.</p>`;
+  $("#a-platforms").innerHTML = (config.campaign_platforms || []).map(p => `<div class="row"><div><b>${esc(p.name)}</b><div class="muted">${esc(p.note || "")}</div></div>
+    <div style="flex:0"><a class="btn ghost small" href="${esc(p.url)}" target="_blank" rel="noopener">Abrir</a></div></div>`).join("");
+}
+
+function finishOAuth(){
+  const q = new URLSearchParams(location.search);
+  if (!q.get("code") || !q.get("state")) return;
+  let expected = ""; try { expected = sessionStorage.getItem("tt_state") || ""; } catch {}
+  history.replaceState(null, "", REDIRECT);
+  if (q.get("state") !== expected) return toast("La conexión con TikTok no coincide; inténtalo de nuevo.", 6000);
+  dispatchConnect("tiktok", q.get("code"), REDIRECT);
+}
+async function dispatchConnect(platform, value, redirect_uri = ""){
+  try {
+    await gh(`/actions/workflows/connect.yml/dispatches`, { method: "POST", body: JSON.stringify({ ref: conn.branch, inputs: { platform, value, redirect_uri } }) });
+    toast(`Conectando ${platform}… en ~1 minuto aparece en "Cuentas" (toca ↻).`, 6000);
+  } catch (e){ toast(e.message, 6000); }
+}
+
+const STATUS = { pending: ["warn", "revisando…"], added: ["ok", "agregada"], rejected: ["err", "no es campaña"], error: ["err", "error"] };
+function renderInbox(){
+  $("#i-list").innerHTML = inbox.slice().reverse().slice(0, 15).map(e => {
+    const [cls, txt] = STATUS[e.status] || ["", e.status];
+    return `<div><div class="row"><div style="flex:3;overflow-wrap:anywhere"><a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.url)}</a></div>
+      <div style="flex:0"><span class="pill ${cls}">${txt}</span></div></div>
+      ${e.campaign ? `<div class="muted">Campaña: <b>${esc(e.campaign)}</b>${e.payout ? " · pago: " + esc(e.payout) : ""}</div>` : ""}
+      ${e.message ? `<div class="muted">${esc(e.message)}</div>` : ""}
+      ${e.notes_for_user ? `<div class="muted">⚠ Tú debes: ${esc(e.notes_for_user)}</div>` : ""}</div>`;
+  }).join("");
+}
+function renderWatch(){
+  const rows = config.campaigns.flatMap(c => (c.sources || []).map(s => ({ camp: c.name, url: s.url, on: c.enabled !== false })));
+  $("#w-list").innerHTML = rows.map(r => `<div class="row"><div style="flex:3;overflow-wrap:anywhere">${esc(r.url)}
+    <div class="muted">${esc(r.camp)}${r.on ? "" : " (pausada)"}</div></div>
+    <div style="flex:0"><button class="btn ghost small" data-unwatch="${esc(r.camp)}|${esc(r.url)}">Dejar de seguir</button></div></div>`).join("")
+    || `<p class="muted">Aún no sigues ninguna cuenta.</p>`;
+}
+
+function postHtml(p){
+  const label = `${p.platform === "tiktok" ? "TikTok" : "Facebook"} · ${esc(p.account)}`;
+  if (p.url) return `<span class="pill ok">${label}</span> <a href="${esc(p.url)}" target="_blank" rel="noopener">abrir</a> <button class="btn ghost small" data-copy="${esc(p.url)}">copiar link</button>`;
+  if (p.status === "ERROR") return `<span class="pill err" title="${esc(p.error)}">${label}: error</span>`;
+  if (p.status === "BORRADOR_EN_APP") return `<span class="pill warn">${label}: borrador en la app, publícalo</span>`;
+  return `<span class="pill">${label}: ${esc(p.status)}</span>`;
+}
+function clipHtml(s){
+  const d = s.date ? new Date(s.date).toLocaleString() : "";
+  const posts = (s.posts || []).map(p => `<div class="links">${postHtml(p)}</div>`).join("") || `<div class="links"><span class="pill">sin publicar</span></div>`;
+  return `<div><div class="clip-title">${esc(s.title)} <span class="pill">${esc(s.campaign)}</span> <span class="muted">score ${esc(s.score)}</span></div>
+    <div class="muted">${esc(d)} · <a href="${esc(s.source_url)}" target="_blank" rel="noopener">${esc(s.source_title)}</a> (${Math.round(s.start)}s–${Math.round(s.end)}s)</div>
+    ${posts}
+    <details><summary class="muted">caption</summary><pre>${esc(s.caption)}</pre><button class="btn ghost small" data-copy="${esc(s.caption)}">copiar caption</button></details></div>`;
+}
+function renderClips(){
+  const f = $("#c-filter").value;
+  const list = subs.filter(s => !f || s.campaign === f);
+  $("#c-list").innerHTML = list.map(clipHtml).join("") || `<p class="muted">Sin clips.</p>`;
+}
+function renderCamps(){
+  $("#k-list").innerHTML = config.campaigns.map((c, i) => `<div class="row">
+    <div><div class="clip-title">${esc(c.name)} ${c.enabled === false ? `<span class="pill">pausada</span>` : `<span class="pill ok">activa</span>`}</div>
+    <div class="muted">${(c.sources || []).length} fuente(s) · ${esc(c.layout || "auto")} · ${subs.filter(s => s.campaign === c.name).length} clips${c.payout ? " · " + esc(c.payout) : ""}${c.ends ? " · hasta " + esc(c.ends) : ""}</div>
+    ${c.campaign_url ? `<div class="muted"><a href="${esc(c.campaign_url)}" target="_blank" rel="noopener">página de la campaña</a></div>` : ""}</div>
+    <div style="flex:0" class="row"><button class="btn ghost small" data-toggle="${i}">${c.enabled === false ? "Activar" : "Pausar"}</button>
+    <button class="btn ghost small" data-edit="${i}">Editar</button></div></div>`).join("") || `<p class="muted">Crea tu primera campaña.</p>`;
+}
+
+async function loadRuns(){
+  try {
+    const r = await gh(`/actions/workflows/${WORKFLOW}/runs?per_page=15`);
+    const runs = r.workflow_runs || [];
+    $("#st-last").textContent = runs[0] ? statusText(runs[0]).replace(/<[^>]+>/g, "") : "–";
+    $("#r-list").innerHTML = runs.map(run => `<div><div class="clip-title">${esc(run.display_title)}</div>
+      <div class="muted">${new Date(run.created_at).toLocaleString()} · ${statusText(run)} · <a href="${esc(run.html_url)}" target="_blank" rel="noopener">ver detalle y descargar clips</a></div></div>`).join("") || `<p class="muted">Aún no hay corridas.</p>`;
+  } catch (e){ $("#r-list").innerHTML = `<p class="muted">${esc(e.message)}</p>`; }
+}
+function statusText(run){
+  if (run.status !== "completed") return `<span class="pill warn">en curso</span>`;
+  return run.conclusion === "success" ? `<span class="pill ok">ok</span>` : `<span class="pill err">${esc(run.conclusion)}</span>`;
+}
+
+// ---------- acciones ----------
+async function dispatch(inputs){
+  await gh(`/actions/workflows/${WORKFLOW}/dispatches`, { method: "POST", body: JSON.stringify({ ref: conn.branch, inputs }) });
+  toast("¡Listo! La corrida empezó. Revisa 'Corridas' en unos segundos.");
+  setTimeout(loadRuns, 4000);
+}
+async function saveConfig(msg){
+  const text = "# Editado desde el panel web\n" + jsyaml.dump(config, { lineWidth: 120, noRefs: true });
+  const r = await gh(`/contents/config.yaml`, { method: "PUT", body: JSON.stringify({ message: msg, content: b64enc(text), sha: configSha, branch: conn.branch }) });
+  configSha = r.content.sha;
+  renderAll();
+  toast("Guardado ✓");
+}
+
+const list = v => String(v || "").split(",").map(s => s.trim().replace(/^#/, "")).filter(Boolean);
+function openForm(i){
+  editing = i;
+  const c = i === null ? { enabled: true, publish: true, layout: "auto", sources: [] } : config.campaigns[i];
+  $("#k-form").classList.remove("hidden");
+  $("#k-form-title").textContent = i === null ? "Nueva campaña" : `Editar: ${c.name}`;
+  $("#f-delete").classList.toggle("hidden", i === null);
+  $("#f-name").value = c.name || "";
+  $("#f-language").value = c.language || "";
+  $("#f-layout").value = c.layout || "auto";
+  $("#f-sources").value = (c.sources || []).map(s => s.url).join("\n");
+  $("#f-maxnew").value = (c.sources || [])[0]?.max_new_videos || 1;
+  $("#f-clips").value = c.clips_per_video || 3;
+  $("#f-min").value = c.min_clip_seconds || 20;
+  $("#f-max").value = c.max_clip_seconds || 60;
+  $("#f-rules").value = c.rules || "";
+  $("#f-suffix").value = c.caption_suffix || "";
+  $("#f-msg").value = c.video_message || "";
+  $("#f-tags").value = (c.required_hashtags || []).join(", ");
+  $("#f-tt").value = (c.tiktok_accounts || []).join(", ");
+  $("#f-fb").value = (c.facebook_pages || []).join(", ");
+  $("#f-enabled").checked = c.enabled !== false;
+  $("#f-publish").checked = c.publish !== false;
+  $("#f-branded").checked = !!c.branded_content;
+  $("#k-form").scrollIntoView({ behavior: "smooth" });
+}
+async function saveForm(){
+  const name = $("#f-name").value.trim().replace(/\s+/g, "-");
+  if (!name) return toast("Ponle un nombre a la campaña");
+  if (config.campaigns.some((c, i) => c.name === name && i !== editing)) return toast("Ya existe una campaña con ese nombre");
+  const maxNew = +$("#f-maxnew").value || 1;
+  const base = editing === null ? {} : config.campaigns[editing];
+  const c = { ...base,
+    name, enabled: $("#f-enabled").checked,
+    sources: $("#f-sources").value.split("\n").map(s => s.trim()).filter(Boolean).map(url => ({ url, max_new_videos: maxNew })),
+    language: $("#f-language").value || null, layout: $("#f-layout").value,
+    clips_per_video: +$("#f-clips").value || 3, min_clip_seconds: +$("#f-min").value || 20, max_clip_seconds: +$("#f-max").value || 60,
+    rules: $("#f-rules").value.trim(), caption_suffix: $("#f-suffix").value.trim(), video_message: $("#f-msg").value.trim(), required_hashtags: list($("#f-tags").value),
+    tiktok_accounts: list($("#f-tt").value), facebook_pages: list($("#f-fb").value),
+    publish: $("#f-publish").checked, branded_content: $("#f-branded").checked,
+  };
+  if (editing === null) config.campaigns.push(c); else config.campaigns[editing] = c;
+  await guarded($("#f-save"), () => saveConfig(`Campaña ${name} actualizada desde el panel`));
+  $("#k-form").classList.add("hidden");
+}
+async function guarded(btn, fn){
+  btn.disabled = true;
+  try { await fn(); } catch (e){ toast(e.message, 6000); await load(); } finally { btn.disabled = false; }
+}
+
+// ---------- UI ----------
+function showSetup(on){
+  $("#setup").classList.toggle("hidden", !on);
+  document.querySelectorAll("[data-view]").forEach(v => v.classList.toggle("hidden", on || v.dataset.view !== currentTab));
+  $("#s-owner").value = conn.owner; $("#s-repo").value = conn.repo; $("#s-branch").value = conn.branch;
+}
+let currentTab = "home";
+$("#tabs").onclick = e => {
+  const t = e.target.dataset.tab; if (!t) return;
+  currentTab = t;
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+  document.querySelectorAll("[data-view]").forEach(v => v.classList.toggle("hidden", v.dataset.view !== t));
+  $("#setup").classList.add("hidden");
+  if (t === "runs") loadRuns();
+};
+$("#s-save").onclick = () => {
+  conn = { owner: $("#s-owner").value.trim(), repo: $("#s-repo").value.trim(), branch: $("#s-branch").value.trim() || "main", token: $("#s-token").value.trim() || conn.token };
+  Object.entries(conn).forEach(([k, v]) => store.set(k, v));
+  load();
+};
+$("#logout").onclick = () => showSetup(true);
+$("#refresh").onclick = () => load();
+$("#run-now").onclick = e => guarded(e.target, () => dispatch({}));
+$("#n-go").onclick = e => {
+  const url = $("#n-url").value.trim();
+  if (!/^https?:\/\//.test(url)) return toast("Pega un link válido");
+  guarded(e.target, () => dispatch({ url, campaign: $("#n-camp").value, no_publish: String($("#n-nopub").checked) }));
+};
+$("#c-filter").onchange = renderClips;
+$("#c-csv").onclick = () => {
+  const rows = [["fecha", "campaña", "clip", "score", "plataforma", "cuenta", "estado", "link", "fuente"]];
+  subs.filter(s => !$("#c-filter").value || s.campaign === $("#c-filter").value).forEach(s =>
+    (s.posts?.length ? s.posts : [{}]).forEach(p => rows.push([s.date, s.campaign, s.title, s.score, p.platform, p.account, p.status, p.url, s.source_url])));
+  const csv = rows.map(r => r.map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv" }));
+  a.download = "clips.csv"; a.click();
+};
+document.addEventListener("click", e => {
+  const cp = e.target.dataset?.copy; if (cp !== undefined){ navigator.clipboard.writeText(cp).then(() => toast("Copiado ✓")); }
+  const uw = e.target.dataset?.unwatch;
+  if (uw !== undefined){
+    const [camp, url] = uw.split(/\|(.+)/); const c = config.campaigns.find(x => x.name === camp);
+    if (c && confirm(`¿Dejar de seguir ${url}?`)){ c.sources = c.sources.filter(s => s.url !== url); guarded(e.target, () => saveConfig(`Dejar de seguir ${url}`)); }
+  }
+  const ed = e.target.dataset?.edit; if (ed !== undefined) openForm(+ed);
+  const tg = e.target.dataset?.toggle;
+  if (tg !== undefined){ const c = config.campaigns[+tg]; c.enabled = c.enabled === false; guarded(e.target, () => saveConfig(`${c.enabled ? "Activar" : "Pausar"} campaña ${c.name}`)); }
+});
+$("#k-add").onclick = () => openForm(null);
+$("#a-copyredir").onclick = () => navigator.clipboard.writeText(REDIRECT).then(() => toast("Copiado ✓"));
+$("#a-save").onclick = e => {
+  config.connect = { ...(config.connect || {}), tiktok_client_key: $("#a-ttkey").value.trim(), facebook_app_id: $("#a-fbid").value.trim() };
+  guarded(e.target, () => saveConfig("Datos de apps de TikTok/Facebook"));
+};
+$("#a-tt").onclick = () => {
+  const key = config.connect?.tiktok_client_key;
+  if (!key) return toast("Primero guarda tu TikTok Client Key abajo");
+  const st = crypto.getRandomValues(new Uint32Array(4)).join("");
+  try { sessionStorage.setItem("tt_state", st); } catch {}
+  const scope = config.connect?.tiktok_scopes || "user.info.basic,user.info.profile,video.upload,video.publish";
+  location.href = "https://www.tiktok.com/v2/auth/authorize/?" + new URLSearchParams({ client_key: key, scope, response_type: "code", redirect_uri: REDIRECT, state: st });
+};
+$("#a-fb").onclick = () => {
+  const appId = config.connect?.facebook_app_id;
+  if (!appId) return toast("Primero guarda tu Facebook App ID abajo");
+  const login = () => FB.login(r => {
+    if (r.authResponse?.accessToken) dispatchConnect("facebook", r.authResponse.accessToken);
+    else toast("No se completó el inicio de sesión de Facebook");
+  }, { scope: "pages_show_list,pages_read_engagement,pages_manage_posts" });
+  if (window.FB) return login();
+  window.fbAsyncInit = () => { FB.init({ appId, version: "v21.0" }); login(); };
+  const sc = document.createElement("script"); sc.src = "https://connect.facebook.net/es_LA/sdk.js"; sc.async = true; document.body.appendChild(sc);
+};
+$("#i-go").onclick = e => {
+  const url = $("#i-url").value.trim();
+  if (!/^https?:\/\//.test(url)) return toast("Pega el link de la campaña");
+  guarded(e.target, async () => {
+    inbox.push({ url, notes: $("#i-notes").value.trim(), status: "pending", added_at: new Date().toISOString() });
+    const r = await gh(`/contents/state/campaign_inbox.json`, { method: "PUT", body: JSON.stringify({
+      message: "Nueva campaña por revisar", content: b64enc(JSON.stringify(inbox, null, 2) + "\n"), sha: inboxSha || undefined, branch: conn.branch }) });
+    inboxSha = r.content.sha;
+    $("#i-url").value = ""; $("#i-notes").value = ""; renderInbox();
+    await dispatch({ only_intake: "true" });
+    toast("Revisando la campaña… en 1–2 minutos aparece aquí. Toca ↻ para actualizar.", 5000);
+  });
+};
+$("#w-go").onclick = e => {
+  const url = $("#w-url").value.trim(), c = config.campaigns.find(x => x.name === $("#w-camp").value);
+  if (!/^https?:\/\//.test(url)) return toast("Pega el link del canal");
+  if (!c) return toast("Primero crea una campaña");
+  c.sources = c.sources || [];
+  if (c.sources.some(s => s.url === url)) return toast("Ya la sigues");
+  c.sources.push({ url, max_new_videos: 1 });
+  $("#w-url").value = "";
+  guarded(e.target, () => saveConfig(`Seguir ${url} en ${c.name}`));
+};
+$("#f-cancel").onclick = () => $("#k-form").classList.add("hidden");
+$("#f-save").onclick = saveForm;
+$("#f-delete").onclick = () => {
+  const c = config.campaigns[editing];
+  if (!confirm(`¿Eliminar la campaña ${c.name}? Los clips ya publicados no se borran.`)) return;
+  config.campaigns.splice(editing, 1);
+  $("#k-form").classList.add("hidden");
+  guarded($("#f-delete"), () => saveConfig(`Eliminar campaña ${c.name}`));
+};
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+load();
+</script>
+</body>
+</html>

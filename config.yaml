@@ -1,0 +1,117 @@
+# ============================================================
+#  Configuración del sistema de clipping automático
+#  (también se puede editar desde el panel web)
+# ============================================================
+
+# ---------- CAMPAÑAS ----------
+# Cada campaña = un creador o marca que te paga por clips (o tu propio canal).
+# Fuentes válidas: canales/videos de YouTube, VODs de Twitch y Kick, y +1000 sitios (yt-dlp).
+# IMPORTANTE: recorta solo contenido tuyo o de campañas que te autoricen.
+campaigns:
+  - name: "mi-canal"
+    enabled: true
+    sources:
+      - url: "https://www.youtube.com/@TU_CANAL/videos"
+        max_new_videos: 1
+    language: "es"
+    layout: "auto"
+    clips_per_video: 3
+    rules: ""                    # reglas de la campaña que Claude debe respetar al elegir clips
+    caption_suffix: ""           # texto obligatorio en cada post (ej: "Sígueme en Twitch: xxx")
+    required_hashtags: []        # hashtags obligatorios de la campaña
+    video_message: "Sígueme para más clips"   # texto fijo dentro del video (vacío = nada)
+    tiktok_accounts: []          # vacío = todas tus cuentas de TikTok
+    facebook_pages: []           # vacío = todas tus páginas de Facebook
+    platforms: ["tiktok", "facebook"]
+    publish: true
+
+  - name: "ejemplo-campaña-streamer"
+    enabled: false               # actívala cuando tengas una campaña real
+    sources:
+      - url: "https://www.twitch.tv/NOMBRE/videos?filter=archives"
+        max_new_videos: 1
+    language: null               # null = detectar idioma automáticamente
+    layout: "split"
+    clips_per_video: 5
+    min_clip_seconds: 15
+    max_clip_seconds: 45
+    rules: "Nada de clips con lenguaje ofensivo. El clip debe mostrar la reacción del streamer."
+    caption_suffix: "Clip de @NOMBRE 🔴 en vivo en twitch.tv/NOMBRE"
+    required_hashtags: ["NOMBRE", "clips"]
+    branded_content: true        # marca el post como contenido pagado en TikTok
+    ends: "2027-01-31"           # después de esta fecha deja de procesarla
+    publish: true
+
+# ---------- CONEXIÓN DE CUENTAS (datos públicos de tus apps; las claves van en Secrets) ----------
+connect:
+  tiktok_client_key: ""
+  facebook_app_id: ""
+
+# ---------- PLATAFORMAS DE CAMPAÑAS DONDE ESTÁS REGISTRADO ----------
+campaign_platforms:
+  - name: "QuantyClips"
+    url: "https://quantyclips.com/"
+    note: "Conecta tu TikTok en tu perfil de clipero"
+  - name: "Reach Clipping"
+    url: "https://reachclipping.com/"
+    note: "Únete a campañas y conecta tus cuentas"
+  - name: "Content Rewards"
+    url: "https://contentrewards.com/"
+    note: "Únete a cada campaña antes de publicar"
+
+# ---------- REVISIÓN AUTOMÁTICA DE CAMPAÑAS ----------
+# Pegas el link de una campaña en el panel -> Claude la lee y la agrega aquí sola.
+intake:
+  auto_activate: true          # true = la campaña nueva empieza a generar y publicar clips sola
+  model: "claude-opus-5-5"
+
+# ---------- VALORES POR DEFECTO (se aplican a todas las campañas) ----------
+defaults:
+  limits:
+    max_video_minutes: 600       # streams de hasta 10 h
+    max_full_transcribe_minutes: 45  # más largo que esto -> solo transcribe los tramos con más reacción
+    long_stream_windows: 8       # cuántos tramos analizar en streams largos
+    download_max_height: 1080
+    clips_per_video: 3
+    min_clip_seconds: 20
+    max_clip_seconds: 60
+
+  transcription:
+    model: "small"               # tiny | base | small | medium
+    language: null
+
+  highlights:
+    model: "claude-opus-5-5"
+    effort: "medium"
+    extra_instructions: >
+      Prioriza reacciones fuertes (gritos, risas, sorpresa), momentos épicos o
+      graciosos, fails, opiniones polémicas y datos sorprendentes. Que tenga un
+      gancho en los primeros 3 segundos y se entienda solo, sin contexto previo.
+
+  render:
+    # auto  = decide solo (facecam chica -> split, cara grande -> face, sin cara -> blur)
+    # split = facecam arriba + juego/pantalla abajo
+    # face  = recorte vertical que sigue la cara
+    # blur  = video completo con fondo difuminado
+    # crop  = recorte fijo al centro
+    layout: "auto"
+    auto_facecam_max: 0.2
+    split_top_ratio: 0.45
+    split_face_zoom: 3.2
+    subtitles: true
+    words_per_caption: 3
+    font: "Montserrat ExtraBold"
+    font_size: 82
+    highlight_color: "&H0000FFFF"
+    show_title_seconds: 3
+
+  publish:
+    enabled: true
+    delay_between_posts_seconds: 60
+    tiktok:
+      enabled: true
+      mode: "inbox"              # inbox = borrador en tu app | direct = publica solo (requiere app auditada)
+      privacy_level: "PUBLIC_TO_EVERYONE"
+      branded_content: false
+    facebook:
+      enabled: true
