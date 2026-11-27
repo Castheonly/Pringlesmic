@@ -1,9 +1,39 @@
 {
   "westcol::01a21906-aa88-7dc7-8ba3-6c95a8ea2f96": {
-    "processed_at": "2026-11-27T22:43:29.196244+00:00",
+    "processed_at": "2026-11-27T22:59:32.721208+00:00",
     "campaign": "westcol",
     "title": "10 HORITAS EN EL SETEO RESCATANDO GTA VI",
-    "attempts": 1,
-    "error": "TypeError: open() got an unexpected keyword argument 'metadata_errors'"
+    "clips": [
+      {
+        "start": 11085.88,
+        "end": 11107.82,
+        "title": "que le quedo gustando la colonoscopia",
+        "score": 8
+      },
+      {
+        "start": 30292.82,
+        "end": 30313.7,
+        "title": "Madrid tiene que ser tu cueco, la",
+        "score": 7
+      },
+      {
+        "start": 27276.64,
+        "end": 27297.7,
+        "title": "Ya va, da, da.",
+        "score": 7
+      },
+      {
+        "start": 29991.9,
+        "end": 30016.18,
+        "title": "Tú eres un fantasma.",
+        "score": 8
+      },
+      {
+        "start": 29656.92,
+        "end": 29693.7,
+        "title": "me metan en 3, 2, 1, 2",
+        "score": 8
+      }
+    ]
   }
 }
