@@ -66,6 +66,7 @@ pre{white-space:pre-wrap;font-size:13px;background:var(--bg);padding:10px;border
 <nav id="tabs">
   <button data-tab="home" class="on">Inicio</button>
   <button data-tab="new">Procesar video</button>
+  <button data-tab="todo">Por publicar</button>
   <button data-tab="clips">Clips y links</button>
   <button data-tab="camps">Campañas</button>
   <button data-tab="accounts">Cuentas</button>
@@ -120,6 +121,16 @@ pre{white-space:pre-wrap;font-size:13px;background:var(--bg);padding:10px;border
     <button class="btn primary" id="n-go">✂ Crear clips</button>
     <p class="muted">Tarda entre 5 y 40 minutos según el largo. Mira el avance en "Corridas".</p>
   </div>
+</section>
+
+<!-- POR PUBLICAR -->
+<section data-view="todo" class="hidden">
+  <div class="card">
+    <h2>Borradores en tu TikTok</h2>
+    <p class="muted">Abre la app de TikTok → Bandeja de entrada → borradores. Para cada uno: copia el texto en pantalla y el caption de aquí,
+    publícalo, y pega el link para que quede registrado (lo necesitas para las campañas).</p>
+  </div>
+  <div class="card"><div class="list" id="t-list"></div></div>
 </section>
 
 <!-- CLIPS -->
@@ -261,7 +272,7 @@ const store = {
   set(k,v){ try { localStorage.setItem(k,v); } catch {} },
 };
 let conn = { owner: store.get("owner"), repo: store.get("repo"), branch: store.get("branch") || "main", token: store.get("token") };
-let discovered = [], discoveredSha = null;
+let discovered = [], discoveredSha = null, subsSha = null;
 let config = null, configSha = null, subs = [], editing = null, inbox = [], inboxSha = null, accs = { tiktok: [], facebook: [] };
 const REDIRECT = location.origin + location.pathname;
 
@@ -291,7 +302,7 @@ async function load(){
     const c = await readFile("config.yaml"); config = jsyaml.load(c.text); configSha = c.sha;
     config.campaigns = config.campaigns || [];
   } catch (e){ toast("No pude leer config.yaml: " + e.message, 6000); return; }
-  try { subs = JSON.parse((await readFile("state/submissions.json")).text); } catch { subs = []; }
+  try { const f = await readFile("state/submissions.json"); subs = JSON.parse(f.text); subsSha = f.sha; } catch { subs = []; subsSha = null; }
   try { const f = await readFile("state/discovered.json"); discovered = JSON.parse(f.text); discoveredSha = f.sha; } catch { discovered = []; discoveredSha = null; }
   try { renderTrends(JSON.parse((await readFile("state/trends.json")).text)); } catch {}
   try { accs = JSON.parse((await readFile("state/accounts_public.json")).text); } catch { accs = { tiktok: [], facebook: [] }; }
@@ -312,7 +323,7 @@ function renderAll(){
   $("#w-camp").innerHTML = opts;
   const cur = $("#c-filter").value;
   $("#c-filter").innerHTML = `<option value="">Todas</option>` + opts; $("#c-filter").value = cur;
-  renderClips(); renderCamps(); renderInbox(); renderWatch(); renderAccounts(); renderDiscovered();
+  renderClips(); renderTodo(); renderCamps(); renderInbox(); renderWatch(); renderAccounts(); renderDiscovered();
   finishOAuth();
 }
 
@@ -411,6 +422,41 @@ function clipHtml(s){
     <div class="links"><button class="btn ghost small" data-copy="${esc(s.caption)}">copiar caption + hashtags</button></div>
     <details><summary class="muted">ver caption</summary><pre>${esc(s.caption)}</pre></details></div>`;
 }
+function pendingDrafts(){
+  return subs.flatMap(s => (s.posts || []).map((p, i) => ({ s, p, i })))
+    .filter(x => x.p.platform === "tiktok" && x.p.status === "BORRADOR_EN_APP");
+}
+function renderTodo(){
+  const list = pendingDrafts();
+  $('[data-tab="todo"]').textContent = list.length ? `Por publicar (${list.length})` : "Por publicar";
+  $("#t-list").innerHTML = list.map(({ s, i }) => `<div>
+    <div class="clip-title">${esc(s.title)} <span class="pill">${esc(s.campaign)}</span> <span class="muted">score ${esc(s.score)}</span></div>
+    <div class="muted">${esc(new Date(s.date).toLocaleString())} · ${Math.round(s.end - s.start)} s</div>
+    ${s.on_screen_text ? `<div class="links"><span class="pill">texto en pantalla</span> <b>${esc(s.on_screen_text)}</b>
+      <button class="btn ghost small" data-copy="${esc(s.on_screen_text)}">copiar</button></div>` : ""}
+    ${s.sound_idea ? `<div class="muted">🎵 ${esc(s.sound_idea)}</div>` : ""}
+    <pre>${esc(s.caption)}</pre>
+    <div class="links"><button class="btn primary small" data-copy="${esc(s.caption)}">copiar caption + hashtags</button></div>
+    <div class="row" style="margin-top:8px"><input placeholder="Pega el link del TikTok publicado" data-linkfor="${esc(s.date)}|${esc(s.file)}|${i}">
+      <div style="flex:0"><button class="btn small" data-markpub="${esc(s.date)}|${esc(s.file)}|${i}">Publicado ✓</button></div></div>
+  </div>`).join("") || `<p class="muted">No hay borradores pendientes. 🎉</p>`;
+}
+async function markPublished(key, btn){
+  const [date, file, i] = key.split("|");
+  const input = [...document.querySelectorAll("[data-linkfor]")].find(x => x.dataset.linkfor === key);
+  const url = (input?.value || "").trim();
+  if (url && !/^https:\/\/(www\.|vm\.|vt\.)?tiktok\.com\//.test(url)) return toast("Ese no parece un link de TikTok");
+  const s = subs.find(x => x.date === date && x.file === file);
+  if (!s) return;
+  s.posts[+i] = { ...s.posts[+i], status: "PUBLICADO", url: url || null, published_at: new Date().toISOString() };
+  await guarded(btn, async () => {
+    const r = await gh(`/contents/state/submissions.json`, { method: "PUT", body: JSON.stringify({
+      message: "Clip publicado en TikTok", content: b64enc(JSON.stringify(subs, null, 2) + "\n"), sha: subsSha, branch: conn.branch }) });
+    subsSha = r.content.sha;
+    renderAll(); toast("Registrado ✓");
+  });
+}
+
 function renderClips(){
   const f = $("#c-filter").value;
   const list = subs.filter(s => !f || s.campaign === f);
@@ -542,6 +588,8 @@ $("#c-csv").onclick = () => {
 };
 document.addEventListener("click", e => {
   const cp = e.target.dataset?.copy; if (cp !== undefined){ navigator.clipboard.writeText(cp).then(() => toast("Copiado ✓")); }
+  const mp = e.target.dataset?.markpub;
+  if (mp !== undefined) markPublished(mp, e.target);
   const jn = e.target.dataset?.joined;
   if (jn !== undefined) guarded(e.target, async () => {
     await setDiscovered(jn, "joined");
