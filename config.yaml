@@ -421,8 +421,10 @@ defaults:
     split_face_zoom: 3.2
     subtitles: true
     words_per_caption: 3
+    mute_profanity: true         # silencia las groserías en el audio y las tapa en los subtítulos (m*****)
+    profanity_extra: []          # palabras extra a silenciar, ej: ["gonorrea", "parcero"]
     font: "Montserrat ExtraBold"
-    font_size: 82
+    font_size: 58                # tamaño de los subtítulos (antes 82)
     highlight_color: "&H0000FFFF"
     show_title_seconds: 3
 
