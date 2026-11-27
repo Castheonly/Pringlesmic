@@ -29,6 +29,22 @@ Tus direcciones (no cambian):
    `mi-gato-come-pizza-los-martes-en-marte-2026-xyz`. Mínimo 40 caracteres.
 3. **Add secret**. Guárdala también en tus notas: si se pierde, tendrás que volver a conectar las cuentas.
 
+## Paso 2.5 — Cookies de YouTube (obligatorio para los canales de YouTube, 5 min)
+
+YouTube bloquea las descargas desde los servidores de GitHub ("Sign in to confirm you're not a bot").
+Sin este paso, Kick funciona igual pero YouTube no (ni videos ni directos).
+
+1. Usa una **cuenta de Google secundaria** (no la principal: YouTube puede marcarla).
+2. En Chrome instala la extensión **"Get cookies.txt LOCALLY"**.
+3. Abre una **ventana de incógnito** (permite la extensión en incógnito), entra a https://www.youtube.com
+   e inicia sesión con la cuenta secundaria.
+4. Con youtube.com abierto, toca la extensión → **Export** (formato Netscape) → se descarga un `.txt`.
+5. **Cierra la ventana de incógnito sin cerrar sesión** (así las cookies no cambian).
+6. Abre el `.txt`, copia todo el texto y crea el secret `YT_COOKIES` en
+   https://github.com/Castheonly/Pringlesmic/settings/secrets/actions pegándolo completo.
+
+> Si en unas semanas vuelve el error del bot, repite estos pasos para renovar las cookies.
+
 ## Paso 3 — Clave de Claude (opcional pero recomendado, 5 min)
 
 Con esta clave, Claude elige los mejores momentos y escribe los captions. Sin ella el sistema
@@ -177,7 +193,8 @@ aceptas los términos en la web y vuelves a tocar **"Ya me uní ✓"**. Desde ah
 | Problema | Solución |
 |---|---|
 | La corrida sale ❌ | Panel → Corridas → "ver detalle" → copia el error y pásamelo |
-| "Sign in to confirm you're not a bot" (YouTube) | Agrega el secret `YT_COOKIES` (exporta cookies de YouTube con la extensión "Get cookies.txt LOCALLY" usando una cuenta secundaria) |
+| "Sign in to confirm you're not a bot" / "YouTube bloqueó la descarga" | Haz o repite el **Paso 2.5** (cookies de YouTube) |
+| "Publicar panel web" falla con *Get Pages site failed* | Falta el **Paso 1**: Settings → Pages → Source: **GitHub Actions** |
 | TikTok no conecta | Revisa que la Redirect URI sea exactamente `https://castheonly.github.io/Pringlesmic/` y que tu cuenta esté en Sandbox → Target users |
 | Facebook no conecta | Revisa dominios del SDK y que la app esté en modo Activo |
 | No aparecen clips nuevos | Revisa que la campaña esté **activa** y tenga fuentes |
