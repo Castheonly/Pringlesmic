@@ -65,7 +65,8 @@ def list_new_videos(url: str, processed, max_new: int, max_minutes: int) -> list
             if not str(web or "").startswith(("http", "file:")):
                 web = f"https://www.youtube.com/watch?v={vid}"
             found.append({"id": vid, "title": e.get("title") or vid, "url": web,
-                          "channel": e.get("channel") or e.get("uploader") or info.get("title")})
+                          "channel": e.get("channel") or e.get("uploader") or info.get("title"),
+                          "timestamp": e.get("timestamp") or e.get("release_timestamp")})
             if len(found) >= max_new:
                 break
     return found

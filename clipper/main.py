@@ -19,13 +19,14 @@ from pathlib import Path
 
 import yaml
 
-from . import highlights, sources, state, trends
+from . import highlights, live, sources, state, trends
 # audio/render/transcribe (video) y accounts/publishers (cifrado) se importan solo en la fase que los usa,
 # así cada máquina instala lo mínimo.
 
 ROOT = Path(__file__).resolve().parent.parent
 WORK, OUTPUT = ROOT / "work", ROOT / "output"
 SUBMISSIONS = ROOT / "state" / "submissions.json"
+BASELINES = ROOT / "state" / "baselines.json"
 
 # claves que una campaña puede sobrescribir directamente -> (sección, clave)
 SHORTCUTS = {
@@ -137,6 +138,7 @@ def plan(defaults: dict, camps: list[dict], url: str | None = None, campaign: st
     except Exception as e:
         print(f"! Radar de tendencias falló (sigo igual): {e}")
 
+    baselines = json.loads(BASELINES.read_text()) if BASELINES.exists() else {}
     limit = defaults["limits"].get("max_videos_per_run", 12)
     jobs, today = [], datetime.now(timezone.utc).date().isoformat()
     for camp in camps:
@@ -152,15 +154,29 @@ def plan(defaults: dict, camps: list[dict], url: str | None = None, campaign: st
         skip = {k.split("::", 1)[1] for k, v in st.items() if k.startswith(prefix)
                 and (v.get("clips") is not None or v.get("attempts", 0) >= 3)}
         for s in camp.get("sources", []):
+            only_new = s.get("only_new", "youtube.com" in s["url"] and "watch?v=" not in s["url"])
+            baseline = baselines.get(s["url"])
             try:
-                videos = sources.list_new_videos(s["url"], skip, s.get("max_new_videos", 1),
+                if only_new and baseline is None:
+                    # primera vez que veo esta fuente: lo que ya existe no se recorta, solo lo nuevo
+                    existing = sources.list_new_videos(s["url"], set(), 30, 10**6)
+                    baselines[s["url"]] = [v["id"] for v in existing]
+                    print(f"[{camp['name']}] {len(existing)} videos existentes ignorados; desde ahora solo lo nuevo")
+                    continue
+                videos = sources.list_new_videos(s["url"], skip | set(baseline or []), s.get("max_new_videos", 1),
                                                  cfg["limits"]["max_video_minutes"])
             except Exception as e:
                 print(f"[{camp['name']}] ✗ no pude leer {s['url']}: {str(e)[:200]}")
                 continue
             for v in videos:
+                if live.covered_by_live(camp["name"], v.get("timestamp")):
+                    print(f"[{camp['name']}] ya recortado en vivo: {v['title']}")
+                    state.mark(st, f"{camp['name']}::{v['id']}", {"campaign": camp["name"], "title": v["title"],
+                                                                 "clips": [], "note": "recortado en vivo"})
+                    continue
                 print(f"[{camp['name']}] nuevo: {v['title']}")
                 jobs.append({"campaign": camp["name"], "video": v})
+    BASELINES.write_text(json.dumps(baselines, indent=1) + "\n")
     if len(jobs) > limit:
         # reparte por turnos entre campañas: primero un video de cada una, luego el segundo, etc.
         seen: dict = {}
@@ -181,6 +197,10 @@ def _shift(segs: list[dict], offset: float) -> list[dict]:
     return out
 
 
+class _UseLocal(Exception):
+    pass
+
+
 def clip_job(job: dict, defaults: dict, camps: list[dict]) -> Path:
     """Procesa un video y deja los clips + manifest.json en output/<campaña>/<video>/."""
     from . import audio, render, transcribe
@@ -193,7 +213,8 @@ def clip_job(job: dict, defaults: dict, camps: list[dict]) -> Path:
     work = WORK / sources._safe(video["id"])
     print(f"\n▶ [{camp['name']}] {video['title']} ({video['id']})")
     try:
-        preview = sources.download_preview(video, work, lim.get("preview_max_height", 360))
+        local = video.get("local_path")   # directo ya grabado en esta máquina (en HD)
+        preview = Path(local) if local else sources.download_preview(video, work, lim.get("preview_max_height", 360))
         loud = audio.Loudness(preview)
         if loud.duration > lim.get("max_full_transcribe_minutes", 45) * 60:
             windows = loud.peak_windows(lim.get("long_stream_windows", 8))
@@ -217,11 +238,15 @@ def clip_job(job: dict, defaults: dict, camps: list[dict]) -> Path:
             print(f"  · clip {i}: {clip['start']:.0f}s-{clip['end']:.0f}s «{clip['title']}» (score {clip['score']})")
             src, c, sg = preview, clip, segs
             try:
+                if local:
+                    raise _UseLocal()
                 pad = 1.0
                 hq = sources.download_section(video, work, clip["start"] - pad, clip["end"] + pad, i,
                                               lim.get("download_max_height", 1080))
                 off = max(0.0, clip["start"] - pad)
                 src, c, sg = hq, {**clip, "start": clip["start"] - off, "end": clip["end"] - off}, _shift(segs, off)
+            except _UseLocal:
+                pass
             except Exception as e:
                 print(f"    (no pude bajar el tramo en HD, uso la versión liviana: {str(e)[:120]})")
             render.render_clip(src, outdir / name, c, sg, cfg["render"])
@@ -233,6 +258,8 @@ def clip_job(job: dict, defaults: dict, camps: list[dict]) -> Path:
     finally:
         for f in work.glob("*"):
             f.unlink(missing_ok=True)
+        if video.get("local_path"):
+            Path(video["local_path"]).unlink(missing_ok=True)
     return _write(outdir, manifest)
 
 
