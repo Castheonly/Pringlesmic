@@ -19,8 +19,9 @@ from pathlib import Path
 
 import yaml
 
-from . import accounts, audio, highlights, render, sources, state, transcribe, trends
-from .publishers import facebook, tiktok
+from . import highlights, sources, state, trends
+# audio/render/transcribe (video) y accounts/publishers (cifrado) se importan solo en la fase que los usa,
+# así cada máquina instala lo mínimo.
 
 ROOT = Path(__file__).resolve().parent.parent
 WORK, OUTPUT = ROOT / "work", ROOT / "output"
@@ -85,6 +86,7 @@ def _wanted(accounts: list[dict], names: list | None) -> list[dict]:
 
 
 def publish(path: Path, caption: str, cfg: dict, camp: dict) -> list[dict]:
+    from .publishers import facebook, tiktok
     posts, targets = [], []
     allowed = camp.get("platforms") or ["tiktok", "facebook"]
     if cfg["tiktok"].get("enabled") and "tiktok" in allowed:
@@ -181,6 +183,7 @@ def _shift(segs: list[dict], offset: float) -> list[dict]:
 
 def clip_job(job: dict, defaults: dict, camps: list[dict]) -> Path:
     """Procesa un video y deja los clips + manifest.json en output/<campaña>/<video>/."""
+    from . import audio, render, transcribe
     camp = _camp(camps, job["campaign"])
     cfg = campaign_config(defaults, camp)
     video, lim, tcfg = job["video"], cfg["limits"], cfg["transcription"]
@@ -242,6 +245,7 @@ def _write(outdir: Path, manifest: dict) -> Path:
 # ------------------------------------------------------------------ publish
 def publish_all(folder: Path, defaults: dict, camps: list[dict], no_publish: bool,
                 planned: list[dict] | None = None) -> int:
+    from . import accounts
     ACCOUNTS.update(accounts.load())
     print(f"Cuentas: {len(ACCOUNTS['tiktok'])} TikTok, {len(ACCOUNTS['facebook'])} Facebook")
     st = state.load()
