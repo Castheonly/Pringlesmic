@@ -83,6 +83,8 @@ no tienen API pública para enviar links, por eso ese paso queda en un clic tuyo
 - `blur`: video completo con fondo difuminado.
 - `crop`: recorte fijo al centro.
 
+> 📘 **Guía paso a paso con todos los clics: [GUIA.md](GUIA.md)**
+
 ## Instalación (una sola vez, ~40 min)
 
 > 🔒 **Nunca compartas tus contraseñas** (ni conmigo, ni en el repo). Las cuentas se conectan con el
