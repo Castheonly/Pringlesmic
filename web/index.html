@@ -187,6 +187,8 @@ pre{white-space:pre-wrap;font-size:13px;background:var(--bg);padding:10px;border
     <textarea id="f-rules"></textarea>
     <label>Texto obligatorio en cada post</label>
     <input id="f-suffix" placeholder="Clip de @creador — síguelo en twitch.tv/creador">
+    <label>Mensaje fijo dentro del video (ej: "Sígueme para más clips")</label>
+    <input id="f-msg" placeholder="Sígueme para más clips">
     <label>Hashtags obligatorios (separados por coma)</label>
     <input id="f-tags" placeholder="creador, clips">
     <div class="row">
@@ -426,6 +428,7 @@ function openForm(i){
   $("#f-max").value = c.max_clip_seconds || 60;
   $("#f-rules").value = c.rules || "";
   $("#f-suffix").value = c.caption_suffix || "";
+  $("#f-msg").value = c.video_message || "";
   $("#f-tags").value = (c.required_hashtags || []).join(", ");
   $("#f-tt").value = (c.tiktok_accounts || []).join(", ");
   $("#f-fb").value = (c.facebook_pages || []).join(", ");
@@ -445,7 +448,7 @@ async function saveForm(){
     sources: $("#f-sources").value.split("\n").map(s => s.trim()).filter(Boolean).map(url => ({ url, max_new_videos: maxNew })),
     language: $("#f-language").value || null, layout: $("#f-layout").value,
     clips_per_video: +$("#f-clips").value || 3, min_clip_seconds: +$("#f-min").value || 20, max_clip_seconds: +$("#f-max").value || 60,
-    rules: $("#f-rules").value.trim(), caption_suffix: $("#f-suffix").value.trim(), required_hashtags: list($("#f-tags").value),
+    rules: $("#f-rules").value.trim(), caption_suffix: $("#f-suffix").value.trim(), video_message: $("#f-msg").value.trim(), required_hashtags: list($("#f-tags").value),
     tiktok_accounts: list($("#f-tt").value), facebook_pages: list($("#f-fb").value),
     publish: $("#f-publish").checked, branded_content: $("#f-branded").checked,
   };

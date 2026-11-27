@@ -29,6 +29,7 @@ SHORTCUTS = {
     "max_video_minutes": ("limits", "max_video_minutes"),
     "layout": ("render", "layout"),
     "subtitles": ("render", "subtitles"),
+    "video_message": ("render", "video_message"),
     "branded_content": ("tiktok", "branded_content"),
 }
 

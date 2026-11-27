@@ -1,5 +1,6 @@
 """Usa Claude para elegir los mejores momentos de la transcripción."""
 import json
+import os
 
 import anthropic
 
@@ -49,6 +50,9 @@ def _format_transcript(segments: list[dict]) -> str:
 
 
 def pick_highlights(segments: list[dict], video_title: str, cfg: dict, limits: dict) -> list[dict]:
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        print("  · sin ANTHROPIC_API_KEY: elijo los clips por picos de reacción")
+        return pick_by_loudness(segments, limits)
     client = anthropic.Anthropic()
     prompt = (
         f"Título del video: {video_title}\n\n"
@@ -95,3 +99,36 @@ def _snap(clips: list[dict], segments: list[dict], limits: dict) -> list[dict]:
             continue
         good.append({**c, "start": start, "end": end})
     return good[: limits["clips_per_video"]]
+
+
+def pick_by_loudness(segments: list[dict], limits: dict) -> list[dict]:
+    """Modo gratis sin IA: arma clips alrededor de los momentos con más reacción (o más habla)."""
+    lo, hi = limits["min_clip_seconds"], limits["max_clip_seconds"]
+
+    def weight(s):
+        return s.get("loud_db", 0) * 3 + len(s["text"].split()) / max(s["end"] - s["start"], 1)
+
+    clips = []
+    for i in sorted(range(len(segments)), key=lambda i: -weight(segments[i])):
+        # arranca 1-2 frases antes del pico para dar contexto, y suma frases hasta la duración mínima
+        a = max(0, i - 2)
+        while a < i and segments[i]["end"] - segments[a]["start"] > hi:
+            a += 1
+        b = i
+        while b + 1 < len(segments) and segments[b]["end"] - segments[a]["start"] < lo:
+            b += 1
+        start, end = segments[a]["start"], min(segments[b]["end"], segments[a]["start"] + hi)
+        if end - start < lo - 3 or any(start < c["end"] and end > c["start"] for c in clips):
+            continue
+        text = segments[i]["text"]
+        clips.append({
+            "start": start, "end": end,
+            "title": " ".join(text.split()[:7]),
+            "caption": text[:200],
+            "hashtags": [],
+            "score": min(10, 5 + int(segments[i].get("loud_db", 0) // 4)),
+            "reason": "pico de reacción",
+        })
+        if len(clips) >= limits["clips_per_video"]:
+            break
+    return clips

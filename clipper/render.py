@@ -24,6 +24,11 @@ def _ts(t: float) -> str:
     return f"{int(h)}:{int(m):02d}:{s:05.2f}"
 
 
+def _strip_emoji(text: str) -> str:
+    """Quita emojis: el render de subtítulos no tiene fuente de emojis y saldrían como cuadros."""
+    return "".join(ch for ch in text if ord(ch) < 0x2190 or 0x2190 <= ord(ch) < 0x2300).strip()
+
+
 def _escape(text: str) -> str:
     return text.replace("\\", "").replace("{", "(").replace("}", ")").replace("\n", " ")
 
@@ -41,12 +46,16 @@ def build_ass(segments: list[dict], start: float, end: float, title: str, cfg: d
         "Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
         f"Style: Cap,{font},{size},&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,6,2,{align},60,60,{margin_v},1",
         f"Style: Title,{font},{int(size * 0.8)},&H00000000,&H00000000,&H00FFFFFF,&H00FFFFFF,-1,0,0,0,100,100,0,0,3,18,0,8,80,80,220,1",
+        f"Style: Msg,{font},{int(size * 0.55)},&H00FFFFFF,&H00FFFFFF,&H00000000,&HA0000000,-1,0,0,0,100,100,0,0,3,14,0,2,80,80,{cfg.get('video_message_margin', 150)},1",
         "", "[Events]",
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
     ]
+    msg = _strip_emoji(cfg.get("video_message") or "").strip()
+    if msg:  # mensaje fijo durante todo el clip (ej: "Sígueme para más clips")
+        lines.append(f"Dialogue: 2,{_ts(0)},{_ts(end - start)},Msg,,0,0,0,,{_escape(msg)}")
     title_secs = cfg.get("show_title_seconds", 0)
     if title and title_secs:
-        lines.append(f"Dialogue: 1,{_ts(0)},{_ts(title_secs)},Title,,0,0,0,,{_escape(title.upper())}")
+        lines.append(f"Dialogue: 1,{_ts(0)},{_ts(title_secs)},Title,,0,0,0,,{_escape(_strip_emoji(title).upper())}")
 
     if cfg.get("subtitles", True):
         words = [w for s in segments for w in s.get("words", []) if w["end"] > start and w["start"] < end]

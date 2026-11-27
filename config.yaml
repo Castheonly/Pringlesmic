@@ -19,6 +19,7 @@ campaigns:
     rules: ""                    # reglas de la campaña que Claude debe respetar al elegir clips
     caption_suffix: ""           # texto obligatorio en cada post (ej: "Sígueme en Twitch: xxx")
     required_hashtags: []        # hashtags obligatorios de la campaña
+    video_message: "Sígueme para más clips"   # texto fijo dentro del video (vacío = nada)
     tiktok_accounts: []          # vacío = todas tus cuentas de TikTok
     facebook_pages: []           # vacío = todas tus páginas de Facebook
     platforms: ["tiktok", "facebook"]
