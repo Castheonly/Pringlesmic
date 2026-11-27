@@ -12,7 +12,7 @@ from pathlib import Path
 
 import cv2
 
-from . import tracking
+from . import profanity, tracking
 
 W, H = 1080, 1920
 
@@ -33,6 +33,21 @@ def _escape(text: str) -> str:
     return text.replace("\\", "").replace("{", "(").replace("}", ")").replace("\n", " ")
 
 
+def _w(word: str, cfg: dict) -> str:
+    """Palabra para el subtítulo: las groserías salen tapadas (m*****)."""
+    if cfg.get("mute_profanity", True) and profanity.is_profane(word, cfg.get("profanity_extra")):
+        return profanity.censor(word)
+    return word
+
+
+def _audio_args(segments, start, end, cfg) -> list[str]:
+    """Silencia el audio en las groserías."""
+    if not cfg.get("mute_profanity", True):
+        return []
+    af = profanity.audio_filter(profanity.mute_ranges(segments, start, end, cfg.get("profanity_extra")))
+    return ["-af", af] if af else []
+
+
 def build_ass(segments: list[dict], start: float, end: float, title: str, cfg: dict) -> str:
     font, size = cfg.get("font", "Arial"), cfg.get("font_size", 80)
     hl = cfg.get("highlight_color", "&H0000FFFF")
@@ -44,7 +59,7 @@ def build_ass(segments: list[dict], start: float, end: float, title: str, cfg: d
         "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, "
         "Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, "
         "Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-        f"Style: Cap,{font},{size},&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,6,2,{align},60,60,{margin_v},1",
+        f"Style: Cap,{font},{size},&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,{max(3, size // 14)},2,{align},70,70,{margin_v},1",
         f"Style: Title,{font},{int(size * 0.8)},&H00000000,&H00000000,&H00FFFFFF,&H00FFFFFF,-1,0,0,0,100,100,0,0,3,18,0,8,80,80,220,1",
         f"Style: Msg,{font},{int(size * 0.55)},&H00FFFFFF,&H00FFFFFF,&H00000000,&HA0000000,-1,0,0,0,100,100,0,0,3,14,0,2,80,80,{cfg.get('video_message_margin', 150)},1",
         "", "[Events]",
@@ -55,7 +70,7 @@ def build_ass(segments: list[dict], start: float, end: float, title: str, cfg: d
         lines.append(f"Dialogue: 2,{_ts(0)},{_ts(end - start)},Msg,,0,0,0,,{_escape(msg)}")
     title_secs = cfg.get("show_title_seconds", 0)
     if title and title_secs:
-        lines.append(f"Dialogue: 1,{_ts(0)},{_ts(title_secs)},Title,,0,0,0,,{_escape(_strip_emoji(title).upper())}")
+        lines.append(f"Dialogue: 1,{_ts(0)},{_ts(title_secs)},Title,,0,0,0,,{_escape(' '.join(_w(t, cfg) for t in _strip_emoji(title).split()).upper())}")
 
     if cfg.get("subtitles", True):
         words = [w for s in segments for w in s.get("words", []) if w["end"] > start and w["start"] < end]
@@ -65,7 +80,7 @@ def build_ass(segments: list[dict], start: float, end: float, title: str, cfg: d
                 t0 = w["start"] - start
                 t1 = (chunk[j + 1]["start"] if j + 1 < len(chunk) else chunk[-1]["end"]) - start
                 parts = [
-                    (f"{{\\c{hl}}}{_escape(x['word'])}{{\\c&H00FFFFFF&}}" if k == j else _escape(x["word"]))
+                    (f"{{\\c{hl}}}{_escape(_w(x['word'], cfg))}{{\\c&H00FFFFFF&}}" if k == j else _escape(_w(x["word"], cfg)))
                     for k, x in enumerate(chunk)
                 ]
                 lines.append(f"Dialogue: 0,{_ts(t0)},{_ts(max(t1, t0 + 0.05))},Cap,,0,0,0,,{' '.join(parts).upper()}")
@@ -111,7 +126,8 @@ def render_clip(src: Path, out: Path, clip: dict, segments: list[dict], cfg: dic
     vf += f";[base]subtitles={ass_path.name}[v]"
     _run(["ffmpeg", "-y", "-loglevel", "error",
           "-ss", f"{start:.2f}", "-i", str(src.resolve()), "-t", f"{end - start:.2f}",
-          "-filter_complex", vf, "-map", "[v]", "-map", "0:a?", "-r", "30", *ENCODE, str(out.resolve())],
+          "-filter_complex", vf, "-map", "[v]", "-map", "0:a?", "-r", "30",
+          *_audio_args(segments, start, end, cfg), *ENCODE, str(out.resolve())],
          cwd=ass_path.parent)
     return out
 
@@ -163,7 +179,7 @@ def _render_tracked(tmp: Path, out: Path, ass_path: Path, clip, segments, cfg, l
          "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{W}x{H}", "-r", f"{fps}", "-i", "pipe:0",
          "-i", str(tmp.resolve()),
          "-filter_complex", f"[0:v]subtitles={ass_path.name}[v]", "-map", "[v]", "-map", "1:a?",
-         *ENCODE, "-shortest", str(out.resolve())],
+         *_audio_args(segments, clip["start"], clip["end"], cfg), *ENCODE, "-shortest", str(out.resolve())],
         stdin=subprocess.PIPE, cwd=ass_path.parent)
     f = 0
     while True:
