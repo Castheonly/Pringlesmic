@@ -9,6 +9,8 @@
 # IMPORTANTE: recorta solo contenido tuyo o de campañas que te autoricen.
 campaigns:
   # Una campaña por creador: se pausa o edita cada una desde el panel.
+  # Kick: directos en vivo + VODs que no se alcanzaron a recortar en vivo.
+  # YouTube: directos en vivo + videos y directos que suban DE AHORA EN ADELANTE (lo anterior se ignora).
   # Los mensajes, captions y hashtags los escribe Claude según el clip, las tendencias y la comunidad.
   - name: "andresaguirreceo"
     enabled: true
@@ -310,6 +312,21 @@ campaigns:
     platforms: ["tiktok", "facebook"]
     publish: true
 
+  - name: "ibaillanos"
+    enabled: true
+    sources:
+      - url: "https://www.youtube.com/@IbaiLlanos"
+        max_new_videos: 1
+    language: "es"
+    layout: "auto"
+    clips_per_video: 5
+    rules: ""
+    caption_suffix: ""
+    required_hashtags: ["ibai"]
+    video_message: ""
+    platforms: ["tiktok", "facebook"]
+    publish: true
+
   - name: "videos-sueltos"
     enabled: true
     sources:
@@ -348,8 +365,22 @@ intake:
 
 # ---------- VALORES POR DEFECTO (se aplican a todas las campañas) ----------
 defaults:
+  # Directos: cada ~20 min revisa qué canales están en vivo (Kick y YouTube) y graba tramos para recortar.
+  # Si varios están en el mismo stream/evento, graba solo uno (el de más viewers).
+  # Los VODs de un directo ya recortado en vivo se saltan. Para apagar en un canal: live: false en su campaña.
+  live:
+    enabled: true
+    chunk_minutes: 45            # minutos que graba por tramo
+    max_height: 1080
+    max_parallel_recordings: 8
+    model: "claude-opus-5-5"     # para detectar si varios están en el mismo evento
+
   # Radar de tendencias: 1 vez al día Claude busca en internet tendencias de TikTok y noticias,
   # memes y comunidades de cada creador, y lo usa para escribir mensajes, captions y hashtags.
+  discover:                    # buscar campañas nuevas en tus plataformas, 1 vez al día
+    enabled: true
+    refresh_hours: 20
+    model: "claude-opus-5-5"
   trends:
     enabled: true
     refresh_hours: 20

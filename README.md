@@ -4,7 +4,9 @@ Convierte streams y videos largos (YouTube, Twitch, Kick y +1000 sitios) en clip
 con subtítulos, los publica solos en tus cuentas de **TikTok** y tus páginas de **Facebook (Reels)**
 y guarda los links de cada post para que los envíes a las **campañas de clipping** que te pagan por vistas.
 
-- **Sin computador prendido**: corre en GitHub Actions cada 4 horas, procesando hasta 8 videos a la vez.
+- **Sin computador prendido**: corre en GitHub Actions. Directos en vivo cada 20 min, VODs y videos nuevos
+  cada 4 horas, hasta 8 videos a la vez. Si varios creadores están en el mismo stream, recorta uno solo.
+- **Buscador de campañas**: cada día revisa tus plataformas y te muestra campañas nuevas; tú aceptas y él recorta.
 - **Radar de tendencias**: cada día Claude investiga tendencias de TikTok y lo último de cada creador y su
   comunidad, y con eso escribe el texto en pantalla, caption, hashtags e idea de sonido de cada clip.
 - **Panel web / app** para el celular: crear campañas, procesar un video al instante y copiar links.
@@ -151,6 +153,9 @@ python -m clipper.main --url "https://www.twitch.tv/videos/123" --campaign mi-ca
 ## Estructura
 - `config.yaml`: campañas y ajustes (también se edita desde el panel).
 - `clipper/accounts.py`: conexión de cuentas (OAuth) y permisos cifrados en `state/accounts.enc`.
+- `clipper/live.py`: detecta directos, agrupa streams iguales, graba y recorta en vivo.
+- `clipper/discover.py`: busca campañas nuevas en tus plataformas (tú las aceptas).
+- `clipper/state_merge.py` + `scripts/save_state.sh`: guardan el registro sin pisar otras corridas.
 - `clipper/campaign_intake.py`: lee las páginas de campañas que pegas y las convierte en campañas.
 - `state/campaign_inbox.json`: campañas por revisar y su resultado.
 - `clipper/sources.py`: busca y descarga videos (yt-dlp).

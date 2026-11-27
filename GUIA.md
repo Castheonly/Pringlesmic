@@ -148,6 +148,18 @@ En **QuantyClips**, **Reach Clipping** y **Content Rewards**, entra con tu usuar
 
 ---
 
+## Qué hace el sistema solo
+
+| Cada | Qué hace |
+|---|---|
+| 20 min | Revisa quién está **en vivo** (Kick y YouTube). Graba tramos de 45 min y los recorta. Si varios están en el mismo stream (se mencionan o es el mismo evento), graba solo el de más viewers. |
+| 4 horas | Revisa **VODs** de Kick (los que no alcanzó a recortar en vivo) y **videos nuevos** de YouTube (solo lo que suban desde ahora). |
+| 1 día | **Radar de tendencias** (TikTok + noticias y comunidades de cada creador) y **busca campañas nuevas** en QuantyClips, Reach y Content Rewards. |
+
+**Campañas:** las nuevas aparecen en el panel → **Campañas → 🆕 Campañas encontradas**. Tú entras con "Abrir y unirme",
+aceptas los términos en la web y vuelves a tocar **"Ya me uní ✓"**. Desde ahí el sistema lee las reglas y recorta ese canal solo.
+(El sistema nunca inicia sesión ni acepta términos por ti.)
+
 ## Tu rutina diaria (5–10 min)
 
 1. **Panel → Clips y links:** cada clip trae, escrito por Claude según el video, las tendencias y la comunidad del creador:

@@ -137,6 +137,11 @@ pre{white-space:pre-wrap;font-size:13px;background:var(--bg);padding:10px;border
 <!-- CAMPAÑAS -->
 <section data-view="camps" class="hidden">
   <div class="card">
+    <h2>🆕 Campañas encontradas</h2>
+    <p class="muted">Una vez al día reviso tus plataformas. Entra, acepta los términos tú, y toca "Ya me uní": desde ahí recorto ese canal solo.</p>
+    <div class="list" id="d-list"></div>
+  </div>
+  <div class="card">
     <h2>Agregar campaña desde su página</h2>
     <p class="muted">Pega el link de la campaña (Whop, web del creador, Discord, etc.). Claude la lee, extrae fuentes, reglas, hashtags y pago, y la deja funcionando sola.</p>
     <label>Link de la campaña</label>
@@ -256,6 +261,7 @@ const store = {
   set(k,v){ try { localStorage.setItem(k,v); } catch {} },
 };
 let conn = { owner: store.get("owner"), repo: store.get("repo"), branch: store.get("branch") || "main", token: store.get("token") };
+let discovered = [], discoveredSha = null;
 let config = null, configSha = null, subs = [], editing = null, inbox = [], inboxSha = null, accs = { tiktok: [], facebook: [] };
 const REDIRECT = location.origin + location.pathname;
 
@@ -286,6 +292,7 @@ async function load(){
     config.campaigns = config.campaigns || [];
   } catch (e){ toast("No pude leer config.yaml: " + e.message, 6000); return; }
   try { subs = JSON.parse((await readFile("state/submissions.json")).text); } catch { subs = []; }
+  try { const f = await readFile("state/discovered.json"); discovered = JSON.parse(f.text); discoveredSha = f.sha; } catch { discovered = []; discoveredSha = null; }
   try { renderTrends(JSON.parse((await readFile("state/trends.json")).text)); } catch {}
   try { accs = JSON.parse((await readFile("state/accounts_public.json")).text); } catch { accs = { tiktok: [], facebook: [] }; }
   try { const f = await readFile("state/campaign_inbox.json"); inbox = JSON.parse(f.text); inboxSha = f.sha; } catch { inbox = []; inboxSha = null; }
@@ -305,8 +312,28 @@ function renderAll(){
   $("#w-camp").innerHTML = opts;
   const cur = $("#c-filter").value;
   $("#c-filter").innerHTML = `<option value="">Todas</option>` + opts; $("#c-filter").value = cur;
-  renderClips(); renderCamps(); renderInbox(); renderWatch(); renderAccounts();
+  renderClips(); renderCamps(); renderInbox(); renderWatch(); renderAccounts(); renderDiscovered();
   finishOAuth();
+}
+
+function renderDiscovered(){
+  const list = discovered.filter(d => d.url !== "_meta" && d.status === "new");
+  const meta = discovered.find(d => d.url === "_meta");
+  $("#d-list").innerHTML = list.map(d => `<div><div class="clip-title">${esc(d.title)} <span class="pill">${esc(d.platform)}</span></div>
+    <div class="muted">${esc(d.creator)}${d.payout ? " · 💰 " + esc(d.payout) : ""}${d.platforms?.length ? " · " + esc(d.platforms.join(", ")) : ""}</div>
+    <div class="muted">${esc(d.summary)}</div>
+    <div class="links"><a class="btn ghost small" href="${esc(d.url)}" target="_blank" rel="noopener">Abrir y unirme</a>
+    <button class="btn primary small" data-joined="${esc(d.url)}">Ya me uní ✓</button>
+    <button class="btn ghost small" data-dismiss="${esc(d.url)}">Descartar</button></div></div>`).join("")
+    || `<p class="muted">${meta ? "Sin campañas nuevas (revisado " + esc(new Date(meta.checked_at).toLocaleString()) + ")." : "Aún no se ha revisado (necesita la clave de Claude)."}</p>`;
+}
+async function setDiscovered(url, status){
+  const d = discovered.find(x => x.url === url); if (!d) return;
+  d.status = status;
+  const r = await gh(`/contents/state/discovered.json`, { method: "PUT", body: JSON.stringify({
+    message: `Campaña ${status === "joined" ? "aceptada" : "descartada"}`, content: b64enc(JSON.stringify(discovered, null, 2) + "\n"), sha: discoveredSha, branch: conn.branch }) });
+  discoveredSha = r.content.sha;
+  renderDiscovered();
 }
 
 function renderTrends(t){
@@ -515,6 +542,19 @@ $("#c-csv").onclick = () => {
 };
 document.addEventListener("click", e => {
   const cp = e.target.dataset?.copy; if (cp !== undefined){ navigator.clipboard.writeText(cp).then(() => toast("Copiado ✓")); }
+  const jn = e.target.dataset?.joined;
+  if (jn !== undefined) guarded(e.target, async () => {
+    await setDiscovered(jn, "joined");
+    if (!inbox.some(x => x.url === jn)){
+      inbox.push({ url: jn, notes: "", status: "pending", added_at: new Date().toISOString() });
+      const r = await gh(`/contents/state/campaign_inbox.json`, { method: "PUT", body: JSON.stringify({
+        message: "Campaña aceptada por revisar", content: b64enc(JSON.stringify(inbox, null, 2) + "\n"), sha: inboxSha || undefined, branch: conn.branch }) });
+      inboxSha = r.content.sha; renderInbox();
+    }
+    await dispatch({ only_intake: "true" });
+  });
+  const dm = e.target.dataset?.dismiss;
+  if (dm !== undefined) guarded(e.target, () => setDiscovered(dm, "dismissed"));
   const uw = e.target.dataset?.unwatch;
   if (uw !== undefined){
     const [camp, url] = uw.split(/\|(.+)/); const c = config.campaigns.find(x => x.name === camp);

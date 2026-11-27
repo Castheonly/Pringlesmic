@@ -55,6 +55,11 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python -m clipper.campaign_intake
+      - name: Buscar campañas en tus plataformas (1 vez al día)
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python -m clipper.discover
       - name: Buscar videos nuevos (+ radar de tendencias)
         id: plan
         env:
@@ -71,13 +76,7 @@ jobs:
           echo "jobs=$(cat jobs.json)" >> "$GITHUB_OUTPUT"
           echo "count=$(python -c 'import json;print(len(json.load(open("jobs.json"))))')" >> "$GITHUB_OUTPUT"
       - name: Guardar campañas y tendencias
-        run: |
-          git config user.name "auto-clipper"
-          git config user.email "actions@users.noreply.github.com"
-          git add state/ config.yaml
-          git diff --cached --quiet && exit 0
-          git commit -m "Campañas y tendencias actualizadas [skip ci]"
-          for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 5; done
+        run: scripts/save_state.sh "Campañas y tendencias actualizadas"
 
   # 2) Un video por máquina, en paralelo
   clip:
@@ -176,10 +175,4 @@ jobs:
           if-no-files-found: ignore
       - name: Guardar registro
         if: always()
-        run: |
-          git config user.name "auto-clipper"
-          git config user.email "actions@users.noreply.github.com"
-          git add state/
-          git diff --cached --quiet && exit 0
-          git commit -m "Registro de clips [skip ci]"
-          for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 5; done
+        run: scripts/save_state.sh "Registro de clips"
