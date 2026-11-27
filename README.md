@@ -4,7 +4,9 @@ Convierte streams y videos largos (YouTube, Twitch, Kick y +1000 sitios) en clip
 con subtítulos, los publica solos en tus cuentas de **TikTok** y tus páginas de **Facebook (Reels)**
 y guarda los links de cada post para que los envíes a las **campañas de clipping** que te pagan por vistas.
 
-- **Sin computador prendido**: corre en GitHub Actions cada 6 horas.
+- **Sin computador prendido**: corre en GitHub Actions cada 4 horas, procesando hasta 8 videos a la vez.
+- **Radar de tendencias**: cada día Claude investiga tendencias de TikTok y lo último de cada creador y su
+  comunidad, y con eso escribe el texto en pantalla, caption, hashtags e idea de sonido de cada clip.
 - **Panel web / app** para el celular: crear campañas, procesar un video al instante y copiar links.
 - **Costo**: $0 en infraestructura. Solo pagas Claude (unos centavos por video).
 

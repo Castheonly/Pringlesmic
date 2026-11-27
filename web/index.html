@@ -100,10 +100,11 @@ pre{white-space:pre-wrap;font-size:13px;background:var(--bg);padding:10px;border
   </div>
   <div class="card">
     <h2>Automático</h2>
-    <p class="muted">El sistema revisa tus campañas cada 6 horas por su cuenta. Si quieres que corra ya mismo:</p>
+    <p class="muted">El sistema revisa tus campañas cada 4 horas por su cuenta. Si quieres que corra ya mismo:</p>
     <button class="btn primary" id="run-now">▶ Correr todas las campañas ahora</button>
   </div>
   <div class="card"><h2>Últimos clips</h2><div class="list" id="home-clips"></div></div>
+  <div class="card"><h2>📈 Tendencias de hoy</h2><div id="home-trends" class="muted">Se actualizan solas una vez al día.</div></div>
 </section>
 
 <!-- PROCESAR -->
@@ -285,6 +286,7 @@ async function load(){
     config.campaigns = config.campaigns || [];
   } catch (e){ toast("No pude leer config.yaml: " + e.message, 6000); return; }
   try { subs = JSON.parse((await readFile("state/submissions.json")).text); } catch { subs = []; }
+  try { renderTrends(JSON.parse((await readFile("state/trends.json")).text)); } catch {}
   try { accs = JSON.parse((await readFile("state/accounts_public.json")).text); } catch { accs = { tiktok: [], facebook: [] }; }
   try { const f = await readFile("state/campaign_inbox.json"); inbox = JSON.parse(f.text); inboxSha = f.sha; } catch { inbox = []; inboxSha = null; }
   subs.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
@@ -305,6 +307,15 @@ function renderAll(){
   $("#c-filter").innerHTML = `<option value="">Todas</option>` + opts; $("#c-filter").value = cur;
   renderClips(); renderCamps(); renderInbox(); renderWatch(); renderAccounts();
   finishOAuth();
+}
+
+function renderTrends(t){
+  const tk = t.tiktok || {};
+  const item = x => `<li><b>${esc(x.name)}</b> — ${esc(x.how_to_use || x.description)}</li>`;
+  $("#home-trends").innerHTML = `<div class="muted">Actualizado: ${esc((t.updated_at || "").slice(0, 10))}</div>
+    ${tk.trends?.length ? `<p><b>Tendencias</b></p><ul>${tk.trends.slice(0, 6).map(item).join("")}</ul>` : ""}
+    ${tk.sounds?.length ? `<p><b>Sonidos</b></p><ul>${tk.sounds.slice(0, 5).map(item).join("")}</ul>` : ""}
+    ${tk.hashtags?.length ? `<p><b>Hashtags:</b> ${tk.hashtags.slice(0, 12).map(h => "#" + esc(h.replace(/^#/, ""))).join(" ")}</p>` : ""}`;
 }
 
 function renderAccounts(){
@@ -367,7 +378,11 @@ function clipHtml(s){
   return `<div><div class="clip-title">${esc(s.title)} <span class="pill">${esc(s.campaign)}</span> <span class="muted">score ${esc(s.score)}</span></div>
     <div class="muted">${esc(d)} · <a href="${esc(s.source_url)}" target="_blank" rel="noopener">${esc(s.source_title)}</a> (${Math.round(s.start)}s–${Math.round(s.end)}s)</div>
     ${posts}
-    <details><summary class="muted">caption</summary><pre>${esc(s.caption)}</pre><button class="btn ghost small" data-copy="${esc(s.caption)}">copiar caption</button></details></div>`;
+    ${s.on_screen_text ? `<div class="links"><span class="pill">texto en pantalla</span> <b>${esc(s.on_screen_text)}</b> <button class="btn ghost small" data-copy="${esc(s.on_screen_text)}">copiar</button></div>` : ""}
+    ${s.sound_idea ? `<div class="muted">🎵 Sonido: ${esc(s.sound_idea)}</div>` : ""}
+    ${s.trend ? `<div class="muted">📈 Tendencia: ${esc(s.trend)}</div>` : ""}
+    <div class="links"><button class="btn ghost small" data-copy="${esc(s.caption)}">copiar caption + hashtags</button></div>
+    <details><summary class="muted">ver caption</summary><pre>${esc(s.caption)}</pre></details></div>`;
 }
 function renderClips(){
   const f = $("#c-filter").value;
