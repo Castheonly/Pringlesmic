@@ -141,6 +141,10 @@ def run() -> int:
     if not pending:
         print("No hay campañas nuevas por revisar.")
         return 0
+    import os
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        print(f"{len(pending)} campaña(s) esperando revisión: falta el secret ANTHROPIC_API_KEY.")
+        return 0
 
     cfg = yaml.safe_load(CONFIG.read_text())
     intake = cfg.get("intake", {})
