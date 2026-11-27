@@ -24,6 +24,17 @@ def _base_opts() -> dict:
     return opts
 
 
+YT_BLOCK_HELP = ("YouTube bloqueó la descarga desde GitHub. Solución: agrega el secret YT_COOKIES con las cookies de "
+                 "una cuenta de YouTube (ver GUIA.md, sección 'Si algo falla').")
+
+
+def friendly(e: Exception) -> str:
+    msg = str(e)
+    if "confirm you" in msg and "bot" in msg:
+        return YT_BLOCK_HELP
+    return msg[:300]
+
+
 def expand_source(url: str) -> list[str]:
     """Convierte la URL de un canal en las listas de videos que hay que revisar."""
     url = url.strip()

@@ -130,7 +130,10 @@ def plan(defaults: dict, camps: list[dict], url: str | None = None, campaign: st
     st = state.load()
     if url:
         camp = _camp(camps, campaign or "videos-sueltos")
-        found = sources.list_new_videos(url, set(), 1, 100000)
+        try:
+            found = sources.list_new_videos(url, set(), 1, 100000)
+        except Exception as e:
+            raise SystemExit(f"✗ {sources.friendly(e)}")
         return [{"campaign": camp["name"], "video": v} for v in found]
 
     try:
@@ -166,7 +169,7 @@ def plan(defaults: dict, camps: list[dict], url: str | None = None, campaign: st
                 videos = sources.list_new_videos(s["url"], skip | set(baseline or []), s.get("max_new_videos", 1),
                                                  cfg["limits"]["max_video_minutes"])
             except Exception as e:
-                print(f"[{camp['name']}] ✗ no pude leer {s['url']}: {str(e)[:200]}")
+                print(f"[{camp['name']}] ✗ no pude leer {s['url']}: {sources.friendly(e)}")
                 continue
             for v in videos:
                 if live.covered_by_live(camp["name"], v.get("timestamp")):
@@ -253,7 +256,7 @@ def clip_job(job: dict, defaults: dict, camps: list[dict]) -> Path:
             (outdir / name).with_suffix(".ass").unlink(missing_ok=True)
             manifest["clips"].append({**clip, "file": name, "caption_full": _caption(clip, camp)})
     except Exception as e:
-        manifest["error"] = f"{type(e).__name__}: {str(e)[:400]}"
+        manifest["error"] = sources.friendly(e)
         traceback.print_exc()
     finally:
         for f in work.glob("*"):
