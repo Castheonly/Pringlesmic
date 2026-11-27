@@ -520,7 +520,7 @@ $("#a-tt").onclick = () => {
   if (!key) return toast("Primero guarda tu TikTok Client Key abajo");
   const st = crypto.getRandomValues(new Uint32Array(4)).join("");
   try { sessionStorage.setItem("tt_state", st); } catch {}
-  const scope = config.connect?.tiktok_scopes || "user.info.basic,user.info.profile,video.upload,video.publish";
+  const scope = config.connect?.tiktok_scopes || "user.info.basic,user.info.profile,video.upload";
   location.href = "https://www.tiktok.com/v2/auth/authorize/?" + new URLSearchParams({ client_key: key, scope, response_type: "code", redirect_uri: REDIRECT, state: st });
 };
 $("#a-fb").onclick = () => {
