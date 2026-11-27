@@ -3,6 +3,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+import numpy as np
 from faster_whisper import WhisperModel
 
 _MODELS: dict = {}
@@ -14,8 +15,18 @@ def _model(name: str) -> WhisperModel:
     return _MODELS[name]
 
 
+def _load_audio(path) -> np.ndarray:
+    """Decodifica a 16 kHz mono con ffmpeg (evita depender de la versión de PyAV que trae faster-whisper)."""
+    raw = subprocess.run(["ffmpeg", "-loglevel", "error", "-i", str(path), "-vn", "-ac", "1", "-ar", "16000",
+                          "-f", "f32le", "pipe:1"], check=True, capture_output=True).stdout
+    return np.frombuffer(raw, dtype=np.float32).copy()
+
+
 def _run(model, path, language, offset: float = 0.0) -> list[dict]:
-    segments, _ = model.transcribe(str(path), language=language, word_timestamps=True, vad_filter=True)
+    audio = _load_audio(path)
+    if audio.size == 0:
+        return []
+    segments, _ = model.transcribe(audio, language=language, word_timestamps=True, vad_filter=True)
     out = []
     for s in segments:
         out.append({
