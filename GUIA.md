@@ -150,11 +150,15 @@ En **QuantyClips**, **Reach Clipping** y **Content Rewards**, entra con tu usuar
 
 ## Tu rutina diaria (5–10 min)
 
-1. **TikTok:** abre la app → **Bandeja de entrada / Notificaciones** → verás "tu video está listo para editar" →
-   ábrelo → agrega **texto**, **sonido** y efectos desde la app → **Publicar**.
-2. **Campañas:** copia el link de cada TikTok publicado y envíalo en la plataforma de la campaña
+1. **Panel → Clips y links:** cada clip trae, escrito por Claude según el video, las tendencias y la comunidad del creador:
+   - **Texto en pantalla** (botón "copiar") → para ponerlo con la herramienta de texto de TikTok.
+   - **Idea de sonido** y **tendencia** a la que se engancha.
+   - **Caption + hashtags** (botón "copiar") → los borradores de TikTok llegan **sin caption**, así que lo pegas tú.
+2. **TikTok:** abre la app → **Bandeja de entrada / Notificaciones** → "tu video está listo para editar" →
+   ábrelo → pega el **texto en pantalla**, agrega el **sonido** si aplica → pega el **caption** → **Publicar**.
+3. **Campañas:** copia el link de cada TikTok publicado y envíalo en la plataforma de la campaña
    (si conectaste tu cuenta ahí, algunas lo detectan solas).
-3. **Panel → Clips y links:** ahí ves todos los clips, sus captions (botón "copiar caption") y los links de Facebook.
+4. **Panel → Inicio → Tendencias de hoy:** lo que está pegando hoy en TikTok (se actualiza solo cada día).
 
 ## Si algo falla
 

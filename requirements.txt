@@ -1,5 +1,5 @@
 anthropic>=2.12
-yt-dlp>=2025.1.1
+yt-dlp[default,curl-cffi]>=2026.10.26
 faster-whisper>=1.1.0
 PyYAML>=6.0
 requests>=2.31

@@ -14,13 +14,18 @@ SCHEMA = {
                 "properties": {
                     "start": {"type": "number", "description": "segundo de inicio"},
                     "end": {"type": "number", "description": "segundo de fin"},
-                    "title": {"type": "string", "description": "gancho corto para mostrar en pantalla (máx 8 palabras)"},
-                    "caption": {"type": "string", "description": "texto de la publicación (1-2 frases)"},
-                    "hashtags": {"type": "array", "items": {"type": "string"}},
+                    "title": {"type": "string", "description": "gancho que se quema en el video los primeros segundos (máx 8 palabras)"},
+                    "on_screen_text": {"type": "string",
+                                       "description": "texto para que el usuario ponga en la app de TikTok (máx 12 palabras), enganchado a una tendencia o meme de la comunidad"},
+                    "caption": {"type": "string", "description": "caption de la publicación: 1-2 frases + pregunta que provoque comentarios"},
+                    "hashtags": {"type": "array", "items": {"type": "string"},
+                                 "description": "4-7 hashtags: creador, comunidad, tendencia del momento y nicho"},
+                    "sound_idea": {"type": "string", "description": "sonido/canción en tendencia que le quedaría, o vacío si el audio original es mejor"},
+                    "trend": {"type": "string", "description": "tendencia, meme o tema del momento al que se engancha el clip"},
                     "score": {"type": "integer", "description": "potencial viral 1-10"},
                     "reason": {"type": "string"},
                 },
-                "required": ["start", "end", "title", "caption", "hashtags", "score", "reason"],
+                "required": ["start", "end", "title", "on_screen_text", "caption", "hashtags", "sound_idea", "trend", "score", "reason"],
                 "additionalProperties": False,
             },
         }
@@ -30,9 +35,15 @@ SCHEMA = {
 }
 
 SYSTEM = (
-    "Eres editor de video experto en contenido corto vertical (TikTok, Reels). "
-    "Recibes la transcripción con marcas de tiempo de un video largo y eliges los "
-    "fragmentos con más potencial de viralizarse. Cada clip debe empezar al inicio de "
+    "Eres el editor de una cuenta de clip farming de streamers latinos en TikTok y Facebook Reels. "
+    "Tu objetivo es que cada clip sea viral: que enganche en el primer segundo, que la gente lo comparta "
+    "y que la comunidad del creador comente. Recibes la transcripción con marcas de tiempo de un video "
+    "o stream largo y eliges los fragmentos con más potencial. Busca: reacciones extremas, frases citables, "
+    "polémicas y opiniones fuertes, momentos graciosos o incómodos, peleas o picantes con invitados, "
+    "chismes, revelaciones y momentos que la comunidad va a reconocer (sus memes y bromas internas). "
+    "Engancha cada clip a lo que está pasando: tendencias de TikTok, noticias del creador y temas del "
+    "momento en redes. Escribe como la comunidad: español latino natural, con su jerga, sin sonar a marca "
+    "ni a robot, sin inventar hechos que no estén en el clip. Cada clip debe empezar al inicio de "
     "una frase y terminar en un cierre natural, sin cortar ideas a la mitad. "
     "Las líneas marcadas con VOLUMEN ALTO indican gritos, risas o reacciones fuertes: "
     "son buenas candidatas, sobre todo si el clip arranca un poco antes para dar contexto. "
@@ -49,14 +60,15 @@ def _format_transcript(segments: list[dict]) -> str:
     )
 
 
-def pick_highlights(segments: list[dict], video_title: str, cfg: dict, limits: dict) -> list[dict]:
+def pick_highlights(segments: list[dict], video_title: str, cfg: dict, limits: dict, context: str = "") -> list[dict]:
     if not os.environ.get("ANTHROPIC_API_KEY"):
         print("  · sin ANTHROPIC_API_KEY: elijo los clips por picos de reacción")
         return pick_by_loudness(segments, limits)
     client = anthropic.Anthropic()
     prompt = (
         f"Título del video: {video_title}\n\n"
-        f"Elige los {limits['clips_per_video']} mejores clips. Cada uno debe durar entre "
+        + (f"<contexto>\n{context}\n</contexto>\n\n" if context else "")
+        + f"Elige los {limits['clips_per_video']} mejores clips. Cada uno debe durar entre "
         f"{limits['min_clip_seconds']} y {limits['max_clip_seconds']} segundos y no deben "
         f"solaparse. {cfg.get('extra_instructions', '')}\n\n"
         f"<transcripcion>\n{_format_transcript(segments)}\n</transcripcion>"
@@ -125,6 +137,9 @@ def pick_by_loudness(segments: list[dict], limits: dict) -> list[dict]:
             "start": start, "end": end,
             "title": " ".join(text.split()[:7]),
             "caption": text[:200],
+            "on_screen_text": " ".join(text.split()[:10]),
+            "sound_idea": "",
+            "trend": "",
             "hashtags": [],
             "score": min(10, 5 + int(segments[i].get("loud_db", 0) // 4)),
             "reason": "pico de reacción",
