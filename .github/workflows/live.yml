@@ -147,3 +147,30 @@ jobs:
       - name: Guardar registro
         if: always()
         run: scripts/save_state.sh "Registro de clips en vivo"
+
+  # Respaldo: no depender solo del horario de GitHub (a veces se atrasa o no dispara).
+  # Al terminar cada ronda programa la siguiente y, si hace falta, la de VODs/YouTube.
+  next:
+    needs: [check, record, publish]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Programar la siguiente revisión
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          COUNT: ${{ needs.check.outputs.count }}
+        run: |
+          if [ "$COUNT" = "0" ] || [ -z "$COUNT" ]; then
+            echo "Nadie en vivo: espero 15 min antes de volver a revisar"; sleep 900
+          fi
+          last=$(gh run list -R "$REPO" --workflow clipper.yml --limit 1 --json createdAt -q '.[0].createdAt' 2>/dev/null || true)
+          if [ -z "$last" ] || [ $(( $(date +%s) - $(date -d "$last" +%s) )) -gt 14400 ]; then
+            echo "VODs/YouTube sin revisar hace más de 4 h: lanzo Auto Clipper"
+            gh workflow run clipper.yml -R "$REPO" --ref main || true
+          fi
+          gh workflow run live.yml -R "$REPO" --ref main
