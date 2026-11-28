@@ -1030,5 +1030,116 @@
         "score": 5
       }
     ]
+  },
+  "chanty::live-chanty-20261128-0412": {
+    "processed_at": "2026-11-28T05:01:43.617998+00:00",
+    "campaign": "chanty",
+    "title": "HOY SE TERMINA GTA I REY DEL IRL 👑🇨🇴 2026-11-28 04:12",
+    "clips": [
+      {
+        "start": 2228.48,
+        "end": 2248.93,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 2188.42,
+        "end": 2209.54,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 1497.38,
+        "end": 1518.24,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 2251.06,
+        "end": 2276.27,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 2149.28,
+        "end": 2169.7,
+        "title": "",
+        "score": 8
+      }
+    ]
+  },
+  "lasapaaaaa::live-lasapaaaaa-20261128-0412": {
+    "processed_at": "2026-11-28T05:01:43.618995+00:00",
+    "campaign": "lasapaaaaa",
+    "title": "CHUPISTREAM CON MAZZA Y DOS AMIGAS 2026-11-28 04:12",
+    "clips": [
+      {
+        "start": 255.43,
+        "end": 275.89,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 1708.42,
+        "end": 1728.56,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 1226.33,
+        "end": 1246.82,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 1196.2,
+        "end": 1216.47,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 230.98,
+        "end": 251.21,
+        "title": "",
+        "score": 10
+      }
+    ]
+  },
+  "soypan::live-soypan-20261128-0412": {
+    "processed_at": "2026-11-28T05:01:43.620015+00:00",
+    "campaign": "soypan",
+    "title": "IRL DE PANA CON GRADY Y BELAPUNK 2026-11-28 04:12",
+    "clips": [
+      {
+        "start": 480.41,
+        "end": 501.41,
+        "title": "",
+        "score": 7
+      },
+      {
+        "start": 950.88,
+        "end": 971.98,
+        "title": "",
+        "score": 7
+      },
+      {
+        "start": 551.5,
+        "end": 572.22,
+        "title": "",
+        "score": 7
+      },
+      {
+        "start": 503.47,
+        "end": 525.73,
+        "title": "",
+        "score": 6
+      },
+      {
+        "start": 706.54,
+        "end": 727.96,
+        "title": "",
+        "score": 6
+      }
+    ]
   }
 }
