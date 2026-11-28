@@ -678,10 +678,10 @@
     "note": "recortado en vivo"
   },
   "akapellah23::akapellah23": {
-    "processed_at": "2026-11-28T08:14:27.120401+00:00",
+    "processed_at": "2026-11-28T12:29:59.376999+00:00",
     "campaign": "akapellah23",
     "title": "Akapellah23 - Videos sorted by Date",
-    "attempts": 2,
+    "attempts": 3,
     "error": "No se descargó akapellah23_preview"
   },
   "bigligas::01a1f5da-bab8-7e6a-b028-ffb62ff0a52d": {
@@ -722,10 +722,10 @@
     ]
   },
   "eladiocarrion::eladiocarrion": {
-    "processed_at": "2026-11-28T08:14:27.127803+00:00",
+    "processed_at": "2026-11-28T12:29:59.384160+00:00",
     "campaign": "eladiocarrion",
     "title": "EladioCarrion - Videos sorted by Date",
-    "attempts": 2,
+    "attempts": 3,
     "error": "No se descargó eladiocarrion_preview"
   },
   "jaywheelerpr::01a1e094-2a68-7eac-aac4-d88da656262e": {
@@ -914,10 +914,10 @@
     ]
   },
   "neutrolacabra::neutrolacabra": {
-    "processed_at": "2026-11-28T08:14:27.135377+00:00",
+    "processed_at": "2026-11-28T12:29:59.388826+00:00",
     "campaign": "neutrolacabra",
     "title": "NeutroLaCabra - Videos sorted by Date",
-    "attempts": 2,
+    "attempts": 3,
     "error": "No se descargó neutrolacabra_preview"
   },
   "samulx::01a21a19-d008-7ccf-8a46-7a381345f4e0": {
@@ -1520,6 +1520,261 @@
       {
         "start": 9291.9,
         "end": 9312.46,
+        "title": "",
+        "score": 7
+      }
+    ]
+  },
+  "andresaguirreceo::01a21087-1550-7ea9-af41-609b85eb8b85": {
+    "processed_at": "2026-11-28T12:29:59.379520+00:00",
+    "campaign": "andresaguirreceo",
+    "title": "MI PRIMER IRL POR LAS CALLES DE NEW YORK",
+    "clips": [
+      {
+        "start": 3415.87,
+        "end": 3436.97,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 3212.04,
+        "end": 3234.34,
+        "title": "",
+        "score": 7
+      },
+      {
+        "start": 5183.79,
+        "end": 5204.21,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 4352.94,
+        "end": 4374.0,
+        "title": "",
+        "score": 7
+      },
+      {
+        "start": 4215.64,
+        "end": 4245.9,
+        "title": "",
+        "score": 7
+      }
+    ]
+  },
+  "bigligas::01a1cd6f-68a8-7419-95b8-4772aa7c4b4c": {
+    "processed_at": "2026-11-28T12:29:59.381257+00:00",
+    "campaign": "bigligas",
+    "title": "NOCHE DE LIGAS!!!",
+    "clips": [
+      {
+        "start": 0.3,
+        "end": 20.87,
+        "title": "",
+        "score": 5
+      }
+    ]
+  },
+  "chanty::01a20a94-d218-7704-b670-429e15c1b8ef": {
+    "processed_at": "2026-11-28T12:29:59.382712+00:00",
+    "campaign": "chanty",
+    "title": "LANZAMIENTO DE POP MIX | EL #2 DE COLOMBIA ROMPIENDO EN MARCAS🔥💪",
+    "clips": [
+      {
+        "start": 5048.24,
+        "end": 5074.46,
+        "title": "",
+        "score": 6
+      },
+      {
+        "start": 5903.0,
+        "end": 5924.18,
+        "title": "",
+        "score": 6
+      },
+      {
+        "start": 2736.38,
+        "end": 2758.42,
+        "title": "",
+        "score": 6
+      },
+      {
+        "start": 5942.48,
+        "end": 5962.76,
+        "title": "",
+        "score": 6
+      },
+      {
+        "start": 2877.42,
+        "end": 2899.34,
+        "title": "",
+        "score": 6
+      }
+    ]
+  },
+  "katycardona::01a209fc-5ad8-73e8-87c3-dd9b2bcb33fd": {
+    "processed_at": "2026-11-28T12:29:59.385657+00:00",
+    "campaign": "katycardona",
+    "title": "La dimos o no la dimos ? Hablando sobre el último stream…",
+    "clips": [
+      {
+        "start": 8170.91,
+        "end": 8191.27,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 5128.78,
+        "end": 5153.28,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 5070.74,
+        "end": 5091.36,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 9436.17,
+        "end": 9464.48,
+        "title": "",
+        "score": 7
+      },
+      {
+        "start": 6549.61,
+        "end": 6570.19,
+        "title": "",
+        "score": 7
+      }
+    ]
+  },
+  "lasapaaaaa::01a21568-9080-7427-a6a5-0edc373fa449": {
+    "processed_at": "2026-11-28T12:29:59.387377+00:00",
+    "campaign": "lasapaaaaa",
+    "title": "GTA 6 HASTA EL AMANECER",
+    "clips": [
+      {
+        "start": 6071.72,
+        "end": 6093.63,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 112.91,
+        "end": 156.84,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 66.01,
+        "end": 87.87,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 30.51,
+        "end": 51.05,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 6896.94,
+        "end": 6918.98,
+        "title": "",
+        "score": 10
+      }
+    ]
+  },
+  "reydelacity::01a20a40-41a8-77c4-9cd3-4759b16c6d4a": {
+    "processed_at": "2026-11-28T12:29:59.390351+00:00",
+    "campaign": "reydelacity",
+    "title": "MUCHA ENERGIA PARA HOYYYY",
+    "clips": [
+      {
+        "start": 35237.09,
+        "end": 35258.15,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 35530.8,
+        "end": 35553.07,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 34857.99,
+        "end": 34879.32,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 34825.36,
+        "end": 34849.76,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 34978.29,
+        "end": 35038.29,
+        "title": "",
+        "score": 10
+      }
+    ]
+  },
+  "soypan::01a215bf-a578-7cda-b1f2-6123fd002f2d": {
+    "processed_at": "2026-11-28T12:29:59.392031+00:00",
+    "campaign": "soypan",
+    "title": "IRL con MASITA",
+    "clips": [
+      {
+        "start": 0.3,
+        "end": 20.85,
+        "title": "",
+        "score": 5
+      }
+    ]
+  },
+  "westcol::01a2051e-8158-7e64-900f-31080bd05b61": {
+    "processed_at": "2026-11-28T12:29:59.393517+00:00",
+    "campaign": "westcol",
+    "title": "72 GANGAS CON LAS HORAS, QUE PASO ANTIER?",
+    "attempts": 1,
+    "error": "Command '['ffmpeg', '-y', '-loglevel', 'error', '-ss', '1.00', '-i', '/home/runner/work/Pringlesmic/Pringlesmic/work/01a2051e-8158-7e64-900f-31080bd05b61/01a2051e-8158-7e64-900f-31080bd05b61_hq05.mp4', '-t', '21.16', '-vf', \"scale=-2:'min(1080,ih)',fps=30\", '-c:v', 'libx264', '-preset', 'ultrafast',"
+  },
+  "willito::01a1be93-ca18-70aa-9ac2-4d1ca3b267ea": {
+    "processed_at": "2026-11-28T12:29:59.395096+00:00",
+    "campaign": "willito",
+    "title": "ESTAMOS EN MOCHIS CON JELTY, PAN Y LONCHE",
+    "clips": [
+      {
+        "start": 7945.94,
+        "end": 8005.94,
+        "title": "",
+        "score": 7
+      },
+      {
+        "start": 6503.68,
+        "end": 6538.7,
+        "title": "",
+        "score": 7
+      },
+      {
+        "start": 7824.23,
+        "end": 7848.76,
+        "title": "",
+        "score": 7
+      },
+      {
+        "start": 19234.36,
+        "end": 19269.4,
+        "title": "",
+        "score": 7
+      },
+      {
+        "start": 7792.0,
+        "end": 7812.42,
         "title": "",
         "score": 7
       }
