@@ -1737,11 +1737,11 @@
     ]
   },
   "westcol::01a2051e-8158-7e64-900f-31080bd05b61": {
-    "processed_at": "2026-11-28T12:29:59.393517+00:00",
+    "processed_at": "2026-11-28T16:37:33.155206+00:00",
     "campaign": "westcol",
     "title": "72 GANGAS CON LAS HORAS, QUE PASO ANTIER?",
-    "attempts": 1,
-    "error": "Command '['ffmpeg', '-y', '-loglevel', 'error', '-ss', '1.00', '-i', '/home/runner/work/Pringlesmic/Pringlesmic/work/01a2051e-8158-7e64-900f-31080bd05b61/01a2051e-8158-7e64-900f-31080bd05b61_hq05.mp4', '-t', '21.16', '-vf', \"scale=-2:'min(1080,ih)',fps=30\", '-c:v', 'libx264', '-preset', 'ultrafast',"
+    "attempts": 2,
+    "error": "Command '['ffmpeg', '-y', '-loglevel', 'error', '-ss', '1.00', '-i', '/home/runner/work/Pringlesmic/Pringlesmic/work/01a2051e-8158-7e64-900f-31080bd05b61/01a2051e-8158-7e64-900f-31080bd05b61_hq04.mp4', '-t', '21.08', '-vf', \"scale=-2:'min(1080,ih)',fps=30\", '-c:v', 'libx264', '-preset', 'ultrafast',"
   },
   "willito::01a1be93-ca18-70aa-9ac2-4d1ca3b267ea": {
     "processed_at": "2026-11-28T12:29:59.395096+00:00",
@@ -1777,6 +1777,352 @@
         "end": 7812.42,
         "title": "",
         "score": 7
+      }
+    ]
+  },
+  "andresaguirreceo::01a20ab9-4620-76f1-8b82-d3a62a242bb7": {
+    "processed_at": "2026-11-28T16:37:33.143066+00:00",
+    "campaign": "andresaguirreceo",
+    "title": "MI PRIMER IRL POR LAS CALLES DE NEW YORK",
+    "clips": [
+      {
+        "start": 120.55,
+        "end": 164.43,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 430.7,
+        "end": 452.34,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 509.94,
+        "end": 533.09,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 330.2,
+        "end": 353.23,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 84.8,
+        "end": 120.17,
+        "title": "",
+        "score": 7
+      }
+    ]
+  },
+  "bigligas::01a1c309-92f8-7a13-872b-e7fe2e007330": {
+    "processed_at": "2026-11-28T16:37:33.144444+00:00",
+    "campaign": "bigligas",
+    "title": "ESTAMOS DE VUELTA FC 27!!!",
+    "clips": [
+      {
+        "start": 7731.9,
+        "end": 7752.44,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 2900.4,
+        "end": 2926.61,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 3862.3,
+        "end": 3885.98,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 2370.71,
+        "end": 2391.37,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 3445.28,
+        "end": 3465.66,
+        "title": "",
+        "score": 9
+      }
+    ]
+  },
+  "chanty::01a2067e-76e8-73ee-8683-1ba9db8cb838": {
+    "processed_at": "2026-11-28T16:37:33.145640+00:00",
+    "campaign": "chanty",
+    "title": "Y AHORA SIGUE GTA VI 🔫👫 I FARMEADOR DEL IRL 👑🇨🇴",
+    "clips": [
+      {
+        "start": 2050.01,
+        "end": 2070.28,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 3040.26,
+        "end": 3071.69,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 2568.74,
+        "end": 2622.16,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 2806.28,
+        "end": 2835.71,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 3264.62,
+        "end": 3314.13,
+        "title": "",
+        "score": 10
+      }
+    ]
+  },
+  "jaywheelerpr::01a1d874-31c0-78b9-bc26-d4094c551f20": {
+    "processed_at": "2026-11-28T16:37:33.146903+00:00",
+    "campaign": "jaywheelerpr",
+    "title": "🛞HABLANDO🛞IRL🛞ESTAMOS EN TEXAS🛞LVF🛞",
+    "clips": [
+      {
+        "start": 940.96,
+        "end": 961.82,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 506.84,
+        "end": 528.06,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 1816.86,
+        "end": 1837.08,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 1317.13,
+        "end": 1338.49,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 3212.3,
+        "end": 3240.91,
+        "title": "",
+        "score": 8
+      }
+    ]
+  },
+  "katycardona::01a1fb3b-3988-7d19-a5f1-dcb1b621c93b": {
+    "processed_at": "2026-11-28T16:37:33.148291+00:00",
+    "campaign": "katycardona",
+    "title": "Estamos en MEDELLIN! que hay para hacer?",
+    "clips": [
+      {
+        "start": 5902.17,
+        "end": 5923.11,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 7961.9,
+        "end": 7989.66,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 1229.5,
+        "end": 1255.03,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 7515.07,
+        "end": 7537.59,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 7259.62,
+        "end": 7307.17,
+        "title": "",
+        "score": 8
+      }
+    ]
+  },
+  "lasapaaaaa::01a20a39-f460-7fcd-b176-603c4df4d996": {
+    "processed_at": "2026-11-28T16:37:33.149765+00:00",
+    "campaign": "lasapaaaaa",
+    "title": "GTA 6 HASTA EL AMANECER",
+    "clips": [
+      {
+        "start": 12849.41,
+        "end": 12880.31,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 73.62,
+        "end": 93.7,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 12621.04,
+        "end": 12642.21,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 118.71,
+        "end": 162.66,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 14142.38,
+        "end": 14162.46,
+        "title": "",
+        "score": 10
+      }
+    ]
+  },
+  "reydelacity::01a20077-2ce0-74fe-9e79-2826e76a1754": {
+    "processed_at": "2026-11-28T16:37:33.151109+00:00",
+    "campaign": "reydelacity",
+    "title": "INTENTANDOME PASAR EL GTA VI",
+    "clips": [
+      {
+        "start": 78.36,
+        "end": 114.22,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 203.76,
+        "end": 237.91,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 286.77,
+        "end": 314.81,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 161.22,
+        "end": 196.42,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 16.41,
+        "end": 41.87,
+        "title": "",
+        "score": 10
+      }
+    ]
+  },
+  "samulx::01a21493-c7d8-7956-87c8-656b0415db75": {
+    "processed_at": "2026-11-28T16:37:33.152408+00:00",
+    "campaign": "samulx",
+    "title": "JUGANDO POR PRIMERA VEZ EL GTA VI",
+    "clips": [
+      {
+        "start": 0.3,
+        "end": 20.85,
+        "title": "",
+        "score": 5
+      }
+    ]
+  },
+  "soypan::01a20ff7-7b98-7136-a90a-700df4b2eade": {
+    "processed_at": "2026-11-28T16:37:33.153794+00:00",
+    "campaign": "soypan",
+    "title": "NO APAGO HASTA QUE TERMINE GTA 6 Y DROP EXCLUSIVO SOLO AQUI",
+    "clips": [
+      {
+        "start": 736.98,
+        "end": 757.16,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 764.18,
+        "end": 786.3,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 791.92,
+        "end": 851.92,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 661.49,
+        "end": 692.2,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 1297.48,
+        "end": 1319.56,
+        "title": "",
+        "score": 9
+      }
+    ]
+  },
+  "willito::01a1b45f-4568-79fe-9c73-f3d3da285316": {
+    "processed_at": "2026-11-28T16:37:33.156617+00:00",
+    "campaign": "willito",
+    "title": "FIESTA DE HALLOWEEN CON PUDINES | VEN YA!!",
+    "clips": [
+      {
+        "start": 981.61,
+        "end": 1007.68,
+        "title": "",
+        "score": 5
+      },
+      {
+        "start": 11224.66,
+        "end": 11244.24,
+        "title": "",
+        "score": 5
+      },
+      {
+        "start": 956.5,
+        "end": 978.46,
+        "title": "",
+        "score": 5
+      },
+      {
+        "start": 11192.64,
+        "end": 11213.86,
+        "title": "",
+        "score": 5
+      },
+      {
+        "start": 1021.12,
+        "end": 1081.12,
+        "title": "",
+        "score": 5
       }
     ]
   }
