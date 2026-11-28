@@ -1737,11 +1737,11 @@
     ]
   },
   "westcol::01a2051e-8158-7e64-900f-31080bd05b61": {
-    "processed_at": "2026-11-28T16:37:33.155206+00:00",
+    "processed_at": "2026-11-28T17:24:09.615099+00:00",
     "campaign": "westcol",
     "title": "72 GANGAS CON LAS HORAS, QUE PASO ANTIER?",
-    "attempts": 2,
-    "error": "Command '['ffmpeg', '-y', '-loglevel', 'error', '-ss', '1.00', '-i', '/home/runner/work/Pringlesmic/Pringlesmic/work/01a2051e-8158-7e64-900f-31080bd05b61/01a2051e-8158-7e64-900f-31080bd05b61_hq04.mp4', '-t', '21.08', '-vf', \"scale=-2:'min(1080,ih)',fps=30\", '-c:v', 'libx264', '-preset', 'ultrafast',"
+    "attempts": 3,
+    "error": "Command '['ffmpeg', '-y', '-loglevel', 'error', '-ss', '1.00', '-i', '/home/runner/work/Pringlesmic/Pringlesmic/work/01a2051e-8158-7e64-900f-31080bd05b61/01a2051e-8158-7e64-900f-31080bd05b61_hq04.mp4', '-t', '20.74', '-vf', \"scale=-2:'min(1080,ih)',fps=30\", '-c:v', 'libx264', '-preset', 'ultrafast',"
   },
   "willito::01a1be93-ca18-70aa-9ac2-4d1ca3b267ea": {
     "processed_at": "2026-11-28T12:29:59.395096+00:00",
@@ -2123,6 +2123,285 @@
         "end": 1081.12,
         "title": "",
         "score": 5
+      }
+    ]
+  },
+  "andresaguirreceo::01a20aa0-2870-790d-bb79-56931a5811d0": {
+    "processed_at": "2026-11-28T17:24:09.597387+00:00",
+    "campaign": "andresaguirreceo",
+    "title": "CLASE #1 DE DROPSHIPPING",
+    "clips": [],
+    "note": "sin voz"
+  },
+  "chanty::01a20523-4be8-7a2d-b4a0-7bcde4f8007b": {
+    "processed_at": "2026-11-28T17:24:09.599745+00:00",
+    "campaign": "chanty",
+    "title": "72 HORAS CON LA GANG NO SMOKE 💪 I FARMEADOR DEL IRL 👑🇨🇴",
+    "clips": [
+      {
+        "start": 1309.44,
+        "end": 1369.44,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 1377.62,
+        "end": 1425.9,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 2853.66,
+        "end": 2913.66,
+        "title": "",
+        "score": 7
+      },
+      {
+        "start": 3159.11,
+        "end": 3219.11,
+        "title": "",
+        "score": 7
+      },
+      {
+        "start": 2820.6,
+        "end": 2853.5,
+        "title": "",
+        "score": 7
+      }
+    ]
+  },
+  "jaywheelerpr::01a1cd6d-6120-7f06-bf0e-e0d0b744d293": {
+    "processed_at": "2026-11-28T17:24:09.601905+00:00",
+    "campaign": "jaywheelerpr",
+    "title": "🛞IRL🛞VEGAS🛞SORPRESAS🛞LVF🛞",
+    "clips": [
+      {
+        "start": 6537.45,
+        "end": 6569.61,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 6312.53,
+        "end": 6372.53,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 6253.04,
+        "end": 6273.53,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 8242.28,
+        "end": 8263.29,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 1187.66,
+        "end": 1208.3,
+        "title": "",
+        "score": 10
+      }
+    ]
+  },
+  "katycardona::01a1ec84-3de0-7e95-9c18-5b415db2597a": {
+    "processed_at": "2026-11-28T17:24:09.604053+00:00",
+    "campaign": "katycardona",
+    "title": "Últimas horas en las vegas! Hablemos 🔥",
+    "clips": [
+      {
+        "start": 2242.53,
+        "end": 2270.94,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 2133.68,
+        "end": 2170.32,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 3077.03,
+        "end": 3123.12,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 2081.88,
+        "end": 2130.38,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 1320.21,
+        "end": 1380.21,
+        "title": "",
+        "score": 8
+      }
+    ]
+  },
+  "lasapaaaaa::01a20663-ceb0-75ea-a6c6-6b2abbd75ef1": {
+    "processed_at": "2026-11-28T17:24:09.606221+00:00",
+    "campaign": "lasapaaaaa",
+    "title": "GTA 6 HASTA EL AMANECER",
+    "clips": [
+      {
+        "start": 7235.0,
+        "end": 7267.66,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 189.42,
+        "end": 249.42,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 145.88,
+        "end": 165.96,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 110.5,
+        "end": 131.08,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 168.44,
+        "end": 189.42,
+        "title": "",
+        "score": 10
+      }
+    ]
+  },
+  "reydelacity::01a1fa36-6418-7afc-848c-6c6ef4ea4aaa": {
+    "processed_at": "2026-11-28T17:24:09.608388+00:00",
+    "campaign": "reydelacity",
+    "title": "INTENTANDOME PASAR EL GTA VI",
+    "clips": [
+      {
+        "start": 0.3,
+        "end": 21.19,
+        "title": "",
+        "score": 5
+      }
+    ]
+  },
+  "samulx::01a1f065-3ce8-70b6-83ed-785acdc00557": {
+    "processed_at": "2026-11-28T17:24:09.610566+00:00",
+    "campaign": "samulx",
+    "title": "48 HORAS CON TODA LA GANGA",
+    "clips": [
+      {
+        "start": 1169.28,
+        "end": 1189.75,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 117.18,
+        "end": 138.26,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 78.06,
+        "end": 98.74,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 904.9,
+        "end": 952.58,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 1148.08,
+        "end": 1169.28,
+        "title": "",
+        "score": 9
+      }
+    ]
+  },
+  "soypan::01a20ae0-5238-7f0d-84af-d90fb7d6b198": {
+    "processed_at": "2026-11-28T17:24:09.612819+00:00",
+    "campaign": "soypan",
+    "title": "24H DE GTA BROTHEEEEEER",
+    "clips": [
+      {
+        "start": 4344.96,
+        "end": 4378.65,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 12193.65,
+        "end": 12214.4,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 8650.7,
+        "end": 8671.31,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 17638.06,
+        "end": 17687.62,
+        "title": "",
+        "score": 8
+      },
+      {
+        "start": 12394.62,
+        "end": 12421.0,
+        "title": "",
+        "score": 8
+      }
+    ]
+  },
+  "willito::01a1a40a-d600-7299-85f7-6ab433448973": {
+    "processed_at": "2026-11-28T17:24:09.617403+00:00",
+    "campaign": "willito",
+    "title": "FIESTA DE HALLOWEEN CON PUDINES | VEN YA!!",
+    "clips": [
+      {
+        "start": 13221.33,
+        "end": 13281.33,
+        "title": "",
+        "score": 7
+      },
+      {
+        "start": 12945.37,
+        "end": 12965.43,
+        "title": "",
+        "score": 6
+      },
+      {
+        "start": 12968.11,
+        "end": 12998.38,
+        "title": "",
+        "score": 6
+      },
+      {
+        "start": 12915.72,
+        "end": 12944.21,
+        "title": "",
+        "score": 6
+      },
+      {
+        "start": 13027.31,
+        "end": 13087.31,
+        "title": "",
+        "score": 6
       }
     ]
   }
