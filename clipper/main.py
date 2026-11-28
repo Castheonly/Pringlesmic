@@ -219,7 +219,13 @@ def clip_job(job: dict, defaults: dict, camps: list[dict]) -> Path:
         local = video.get("local_path")   # directo ya grabado en esta máquina (en HD)
         preview = Path(local) if local else sources.download_preview(video, work, lim.get("preview_max_height", 360))
         loud = audio.Loudness(preview)
-        if loud.duration > lim.get("max_full_transcribe_minutes", 45) * 60:
+        live_cfg = defaults.get("live", {})
+        if local and loud.duration > 10 * 60:
+            # directo: solo los momentos con más reacción, para que los clips salgan rápido
+            windows = loud.peak_windows(live_cfg.get("windows", 6), before=90, after=45)
+            print(f"  · directo de {loud.duration / 60:.0f} min: transcribo los {len(windows)} momentos con más reacción")
+            segs = transcribe.transcribe_windows(preview, windows, tcfg["model"], tcfg.get("language"))
+        elif loud.duration > lim.get("max_full_transcribe_minutes", 45) * 60:
             windows = loud.peak_windows(lim.get("long_stream_windows", 8))
             print(f"  · {loud.duration / 3600:.1f} h: transcribo los {len(windows)} tramos con más reacción")
             segs = transcribe.transcribe_windows(preview, windows, tcfg["model"], tcfg.get("language"))

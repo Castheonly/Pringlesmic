@@ -133,12 +133,14 @@ def pick_by_loudness(segments: list[dict], limits: dict) -> list[dict]:
         start, end = segments[a]["start"], min(segments[b]["end"], segments[a]["start"] + hi)
         if end - start < lo - 3 or any(start < c["end"] and end > c["start"] for c in clips):
             continue
-        text = segments[i]["text"]
+        from .profanity import censor, is_profane
+        text = " ".join(censor(w) if is_profane(w) else w for w in segments[i]["text"].split())
         clips.append({
             "start": start, "end": end,
-            "title": " ".join(text.split()[:7]),
-            "caption": text[:200],
-            "on_screen_text": " ".join(text.split()[:10]),
+            # sin IA no se quema un gancho (quedaría una frase cortada); Claude lo escribe cuando hay API key
+            "title": "",
+            "caption": f"“{text[:180]}” 😳",
+            "on_screen_text": "",
             "sound_idea": "",
             "trend": "",
             "hashtags": [],
