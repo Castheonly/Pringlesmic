@@ -183,5 +183,160 @@
         "score": 8
       }
     ]
+  },
+  "andresaguirreceo::live-andresaguirreceo-20261128-0058": {
+    "processed_at": "2026-11-28T01:45:57.556067+00:00",
+    "campaign": "andresaguirreceo",
+    "title": "ULTIMO DIA EN NEW YORK 2026-11-28 00:58",
+    "clips": [],
+    "note": "sin voz"
+  },
+  "chanty::live-chanty-20261128-0058": {
+    "processed_at": "2026-11-28T01:45:57.556566+00:00",
+    "campaign": "chanty",
+    "title": "HOY SE TERMINA GTA I REY DEL IRL 👑🇨🇴 2026-11-28 00:58",
+    "clips": [
+      {
+        "start": 217.56,
+        "end": 243.12,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 176.65,
+        "end": 202.68,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 1535.3,
+        "end": 1559.64,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 950.26,
+        "end": 970.65,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 314.3,
+        "end": 336.29,
+        "title": "",
+        "score": 9
+      }
+    ]
+  },
+  "lasapaaaaa::live-lasapaaaaa-20261128-0058": {
+    "processed_at": "2026-11-28T01:45:57.557009+00:00",
+    "campaign": "lasapaaaaa",
+    "title": "STREAM CON MAZZA 2026-11-28 00:58",
+    "clips": [
+      {
+        "start": 1115.22,
+        "end": 1135.48,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 282.82,
+        "end": 304.7,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 57.52,
+        "end": 78.98,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 748.79,
+        "end": 773.73,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 463.27,
+        "end": 483.91,
+        "title": "",
+        "score": 9
+      }
+    ]
+  },
+  "reydelacity::live-reydelacity-20261128-0058": {
+    "processed_at": "2026-11-28T01:45:57.557389+00:00",
+    "campaign": "reydelacity",
+    "title": "VOLVI DE MIS VACACIONES 2026-11-28 00:58",
+    "clips": [
+      {
+        "start": 50.0,
+        "end": 71.16,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 79.12,
+        "end": 100.43,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 4.84,
+        "end": 27.58,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 1667.0,
+        "end": 1690.49,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 1912.8,
+        "end": 1936.56,
+        "title": "",
+        "score": 10
+      }
+    ]
+  },
+  "soypan::live-soypan-20261128-0058": {
+    "processed_at": "2026-11-28T01:45:57.557776+00:00",
+    "campaign": "soypan",
+    "title": "IRL DE PANA CON GRADY Y BELAPUNK 2026-11-28 00:58",
+    "clips": [
+      {
+        "start": 156.64,
+        "end": 180.46,
+        "title": "",
+        "score": 6
+      },
+      {
+        "start": 2065.14,
+        "end": 2085.76,
+        "title": "",
+        "score": 6
+      },
+      {
+        "start": 1499.0,
+        "end": 1521.28,
+        "title": "",
+        "score": 6
+      },
+      {
+        "start": 2040.0,
+        "end": 2060.04,
+        "title": "",
+        "score": 5
+      },
+      {
+        "start": 421.79,
+        "end": 442.6,
+        "title": "",
+        "score": 5
+      }
+    ]
   }
 }
