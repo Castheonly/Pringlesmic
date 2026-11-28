@@ -493,5 +493,153 @@
         "score": 6
       }
     ]
+  },
+  "chanty::live-chanty-20261128-0306": {
+    "processed_at": "2026-11-28T03:56:35.877864+00:00",
+    "campaign": "chanty",
+    "title": "HOY SE TERMINA GTA I REY DEL IRL 👑🇨🇴 2026-11-28 03:06",
+    "clips": [
+      {
+        "start": 942.08,
+        "end": 965.15,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 61.06,
+        "end": 84.53,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 566.76,
+        "end": 588.14,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 86.09,
+        "end": 116.3,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 1063.4,
+        "end": 1088.12,
+        "title": "",
+        "score": 9
+      }
+    ]
+  },
+  "lasapaaaaa::live-lasapaaaaa-20261128-0306": {
+    "processed_at": "2026-11-28T03:56:35.878635+00:00",
+    "campaign": "lasapaaaaa",
+    "title": "CHUPISTREAM CON MAZZA Y DOS AMIGAS 2026-11-28 03:06",
+    "clips": [
+      {
+        "start": 680.8,
+        "end": 701.25,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 461.55,
+        "end": 482.99,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 724.73,
+        "end": 745.91,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 1436.2,
+        "end": 1456.52,
+        "title": "",
+        "score": 9
+      },
+      {
+        "start": 642.8,
+        "end": 662.8,
+        "title": "",
+        "score": 9
+      }
+    ]
+  },
+  "reydelacity::live-reydelacity-20261128-0306": {
+    "processed_at": "2026-11-28T03:56:35.879497+00:00",
+    "campaign": "reydelacity",
+    "title": "VOLVI DE MIS VACACIONES 2026-11-28 03:06",
+    "clips": [
+      {
+        "start": 1740.54,
+        "end": 1761.05,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 1422.89,
+        "end": 1446.24,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 1715.01,
+        "end": 1736.54,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 2019.33,
+        "end": 2041.64,
+        "title": "",
+        "score": 10
+      },
+      {
+        "start": 1446.24,
+        "end": 1466.82,
+        "title": "",
+        "score": 10
+      }
+    ]
+  },
+  "soypan::live-soypan-20261128-0306": {
+    "processed_at": "2026-11-28T03:56:35.880336+00:00",
+    "campaign": "soypan",
+    "title": "IRL DE PANA CON GRADY Y BELAPUNK 2026-11-28 03:06",
+    "clips": [
+      {
+        "start": 1988.02,
+        "end": 2008.64,
+        "title": "",
+        "score": 7
+      },
+      {
+        "start": 239.9,
+        "end": 261.16,
+        "title": "",
+        "score": 6
+      },
+      {
+        "start": 621.14,
+        "end": 642.18,
+        "title": "",
+        "score": 7
+      },
+      {
+        "start": 307.98,
+        "end": 328.42,
+        "title": "",
+        "score": 7
+      },
+      {
+        "start": 1660.96,
+        "end": 1681.84,
+        "title": "",
+        "score": 6
+      }
+    ]
   }
 }
